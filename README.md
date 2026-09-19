@@ -20,12 +20,13 @@ docs/              Phase implementation plan and worklog
 
 - **EFFIS Rapid Damage Assessment (MODIS-based) fire database**: the
   primary source. Real per-fire dates, real NUTS2 region locations, and
-  real burned areas for Portugal, 2010-2024 (6,568 usable records),
-  obtained via EFFIS's official Data Request Form as a one-time manual
-  submission (EFFIS's live Statistics Portal has no public JSON API). This
-  product maps fires of roughly 30ha or larger; **a "fire event" in this
-  model means a mapped ~30ha+ fire, not every ignition** - a deliberate
-  scope choice, not a hidden gap (see "Data gaps and assumptions" in
+  real burned areas for Portugal, 2010-2024 (6,533 usable records after
+  dropping non-physical and duplicate rows, see below), obtained via
+  EFFIS's official Data Request Form as a one-time manual submission
+  (EFFIS's live Statistics Portal has no public JSON API). This product
+  maps fires of roughly 30ha or larger; **a "fire event" in this model
+  means a mapped ~30ha+ fire, not every ignition** - a deliberate scope
+  choice, not a hidden gap (see "Data gaps and assumptions" in
   `01_eda.ipynb`).
 - **GWIS** (Global Wildfire Information System, JRC/Copernicus): live
   annual fire-count and burnt-area series for Portugal, fetched via Our
@@ -43,16 +44,29 @@ docs/              Phase implementation plan and worklog
   `docs/worklog.md`, and the "Data gaps and assumptions" section in
   `01_eda.ipynb`.
 
-**Known cross-validation discrepancies (documented, not hidden):** the
-real EFFIS large-fire counts are sometimes *higher* than OWID's all-fire
-counts for the same year, and summed real large-fire area exceeds GWIS's
-reported total burnt area in every year (85%-197%, mean 116.6%) even
-though EFFIS's own documentation implies large fires should be a ~75-80%
-subset of the total. Both point to genuine methodology differences between
-independent burnt-area/fire-count products (EFFIS's own Rapid Damage
-Assessment vs. GWIS/MODIS aggregation and VIIRS-based counting), not a
-data error - see the notebook's cross-validation section for the full
-per-year comparison.
+**Known cross-validation discrepancies (investigated, not hidden):**
+
+- **Count**: real EFFIS large-fire counts are sometimes *higher* than
+  OWID's all-fire counts for the same year (e.g. 2022). Explained by
+  differing methodologies: EFFIS maps burnt-area polygons from MODIS,
+  OWID/GWIS counts VIIRS thermal-anomaly point detections, a different
+  sensor and a different definition of "one fire."
+- **Area**: an earlier pass reported large-fire area exceeding GWIS's
+  total in every year by a "mean ratio" of 116.6%, which looked alarming.
+  That statistic was itself misleading, an unweighted mean over-weights
+  small years. The properly weighted total-to-total ratio across all 15
+  years is **106.1%**, a modest overshoot within the normal disagreement
+  range between independent satellite burnt-area products. A smaller, real
+  puzzle remains: a 3-year rolling view shows ~92-108% agreement through
+  2012-2019, rising to ~114-134% for 2020-2024, not fully explained (ruled
+  out: a confirmed 69-row duplicate-record artifact in the raw export,
+  fixed below, was too small, ~104 ha, to be the cause).
+- A separate, confirmed **data-quality defect** was also found and fixed:
+  69 exact duplicate records (same parish, area, and timestamp under a
+  different id, all tiny fires, concentrated in 2021-2024) are now
+  deduplicated in `load_effis_fire_database`.
+
+See the notebook's cross-validation section for the full per-year working.
 
 **Reproducibility note:** the EFFIS per-fire database is a static,
 one-time export committed to git, so it carries no drift risk. OWID/GWIS

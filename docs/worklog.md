@@ -94,21 +94,6 @@ plan) since this is a backward-looking record.
   despite being a small fraction of total fire *count* (most fires are
   small).
 
-## Frequency scope decision
-
-- Real severity data now only covers large (~30ha+) fires, but the
-  previously-used OWID frequency series counted every fire including tiny
-  ones, an inconsistent pairing.
-- Decision: redefine the model's frequency (Poisson lambda) as the count
-  of real large-fire records per year, dropping the all-fires OWID count
-  from the primary pipeline. Rationale: for a catastrophe loss model
-  focused on tail risk (VaR, Expected Shortfall), immaterial small fires
-  don't drive the numbers that matter, and this keeps frequency and
-  severity internally consistent, both drawn from the same real dataset.
-  A "fire event" in this model now specifically means a mapped ~30ha+
-  fire, not every ignition in Portugal, an explicit, documented scope
-  choice rather than a hidden one.
-
 ## Real data integration (done)
 
 - Copied the real EFFIS CSV into `data/raw/effis_fire_database_pt_2010_2024.csv`
@@ -146,15 +131,16 @@ plan) since this is a backward-looking record.
   specifically means a mapped ~30ha+ fire, not every ignition in Portugal,
   an explicit, documented scope choice.
 
-## Two real discrepancies found during cross-validation (documented, not hidden)
+## Two real discrepancies found during cross-validation
 
 Kept the live OWID/GWIS fetch in the notebook specifically to cross-check
 the real EFFIS data against an independent source, rather than just
-trusting one dataset. That check surfaced two genuine, unresolved
-mismatches:
+trusting one dataset. That check surfaced two genuine mismatches, one
+explained by methodology, one investigated further and mostly resolved
+(see "Assessing the discrepancies" below).
 
 1. **Count**: EFFIS's large-fire-only annual counts are sometimes *higher*
-   than OWID's all-fire counts for the same year (e.g. 2022: 1,227 real
+   than OWID's all-fire counts for the same year (e.g. 2022: ~1,210 real
    large-fire records vs. 465 in OWID's all-fire series). Backwards at
    first glance, but explained by differing methodologies: EFFIS's MODIS
    Rapid Damage Assessment maps burnt-area polygons at 250m resolution,
@@ -162,17 +148,51 @@ mismatches:
    from VIIRS thermal-anomaly point detections clustered into events, a
    different sensor and a different definition of "one fire."
 2. **Area**: summed real large-fire area exceeds GWIS's reported total
-   burnt area in every single year in the dataset (85%-197%, mean 116.6%),
-   which should be impossible if large fires were truly a subset of the
-   total, as EFFIS's own documentation (~75-80% at EU level) implies. Most
-   likely explanation: EFFIS's own Rapid Damage Assessment and GWIS's
-   MODIS-based aggregate are different burnt-area products with different
-   methodologies, not the same measurement re-published twice. Chose to
-   document this openly in both the notebook and README rather than
-   silently pick whichever number looked more convenient, or quietly drop
-   the cross-check once it stopped agreeing with the primary source.
+   burnt area in every single year in the dataset (85%-197%, mean 116.6%
+   as first reported), which should be impossible if large fires were
+   truly a subset of the total, as EFFIS's own documentation (~75-80% at
+   EU level) implies.
+
+## Assessing the discrepancies (deeper investigation, at the user's request)
+
+The user asked to actually assess these rather than leave them as "probably
+methodology differences." Concrete checks run against the raw data:
+
+- **The "116.6% mean" statistic was itself misleading.** It's an unweighted
+  average of per-year ratios, so a tiny year like 2021 (197% ratio, but
+  only a ~16,000 ha absolute gap) counts the same as a huge year like 2017
+  (108% ratio). The properly weighted total-to-total ratio across all 15
+  years (sum of real area / sum of GWIS area) is **106.1%**, a modest
+  overshoot well within the normal disagreement range between independent
+  satellite burnt-area products. Lesson: check whether a summary statistic
+  is actually the right one to report before treating it as the finding.
+- **Found and fixed a real, separate data-quality defect**: 69 rows in the
+  raw export are exact duplicates (same parish `admlvl5`, same `area_ha`,
+  same `initialdate` down to the minute, but a different `id`), all tiny
+  fires (1-12 ha), concentrated in 2021-2024. Total excess area: ~104 ha
+  out of 1.71M ha (0.01%), immaterial to the model, but a confirmed export
+  artifact rather than a methodology difference, so deduplicated in
+  `load_effis_fire_database` (down to 6,533 usable records from 6,568).
+- **A real, smaller pattern remains, not fully explained**: a 3-year
+  rolling comparison shows ~92-108% agreement through 2012-2019, rising to
+  ~114-134% for 2020-2024. Checked and ruled out the duplicate records
+  above as the cause (too small in area to move this). Left as an open
+  question rather than force-resolved - possible causes not yet checked:
+  GWIS/OWID's most recent years being less finalized/revised than older
+  years, or a genuine change in EFFIS's own detection methodology over
+  time.
+- **Bonus find while investigating the top outlier fires**: the 5 largest
+  fires in the real dataset all check out against known history (the two
+  ~67,500 ha and ~64,300 ha October 2017 fires match the well-documented
+  2017 catastrophic complex). A 35,523 ha fire in Centro region, September
+  2024, is very likely the mainland fire behind Copernicus EMS activation
+  EMSR760 (Sever do Vouga), which earlier research couldn't find a hectare
+  figure for. Added as a reference point in the notebook's domain
+  validation section, flagged as plausible but not confirmed against the
+  activation record itself.
 
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't
   started yet.
+- The 2020-2024 area-ratio divergence (above) is still an open question.
