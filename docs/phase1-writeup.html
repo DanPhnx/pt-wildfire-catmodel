@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Portuguese Wildfire EDA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,440;0,9..144,560;0,9..144,650;1,9..144,520&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF0EF;
+    --surface: #E3E6E4;
+    --surface-2: #D9DCDA;
+    --text: #1C1917;
+    --text-secondary: #46423F;
+    --muted: #6B7278;
+    --border: #CBCFCD;
+    --accent: #B5451A;
+    --accent-deep: #7A2E10;
+    --accent-soft: rgba(181, 69, 26, 0.10);
+    --focus: #1D6F8C;
+    --chart-area: #B5451A;
+    --chart-count: #57636D;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161412;
+      --surface: #201C18;
+      --surface-2: #2A2521;
+      --text: #EDEAE4;
+      --text-secondary: #BBB3A8;
+      --muted: #8A8378;
+      --border: #3A342E;
+      --accent: #E2733B;
+      --accent-deep: #F0946A;
+      --accent-soft: rgba(226, 115, 59, 0.16);
+      --focus: #5FC0E3;
+      --chart-area: #E2733B;
+      --chart-count: #93A0A8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161412;
+    --surface: #201C18;
+    --surface-2: #2A2521;
+    --text: #EDEAE4;
+    --text-secondary: #BBB3A8;
+    --muted: #8A8378;
+    --border: #3A342E;
+    --accent: #E2733B;
+    --accent-deep: #F0946A;
+    --accent-soft: rgba(226, 115, 59, 0.16);
+    --focus: #5FC0E3;
+    --chart-area: #E2733B;
+    --chart-count: #93A0A8;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  img { max-width: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    padding-inline: 20px;
+    padding-block: 56px 80px;
+  }
+
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  a { color: var(--accent-deep); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+  }
+  .eyebrow strong { color: var(--accent-deep); font-weight: 500; }
+
+  header.doc-head {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 28px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: clamp(2.1rem, 5vw, 2.7rem);
+    line-height: 1.06;
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .dek {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 46ch;
+    margin: 0;
+  }
+
+  section { display: flex; flex-direction: column; gap: 14px; }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-style: italic;
+    font-size: 1.5rem;
+    margin: 0;
+    color: var(--text);
+    text-wrap: balance;
+  }
+  p { margin: 0; max-width: 66ch; }
+  p + p { margin-top: 12px; }
+  strong { color: var(--text); font-weight: 600; }
+
+  ul.findings {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  ul.findings li {
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+    max-width: 66ch;
+  }
+  ul.findings li.resolved { border-left-color: var(--accent); }
+
+  .callout {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 16px 18px;
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .callout .label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-deep);
+  }
+  .callout p { max-width: none; }
+
+  .stat-correction {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 20px 22px;
+  }
+  .stat-block { display: flex; flex-direction: column; gap: 4px; }
+  .stat-block .stat-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat-block .stat-value {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.9rem;
+    font-weight: 500;
+  }
+  .stat-block.wrong .stat-value { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+  .stat-block.right .stat-value { color: var(--accent-deep); }
+  .stat-arrow { font-family: var(--font-mono); color: var(--muted); font-size: 1.4rem; }
+  .stat-note { font-size: 0.88rem; color: var(--text-secondary); flex-basis: 100%; max-width: 60ch; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+  }
+  caption {
+    text-align: left;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  th, td {
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    color: var(--text-secondary);
+  }
+  td.num { text-align: right; }
+  .table-wrap { overflow-x: auto; }
+
+  .chart-block { display: flex; flex-direction: column; gap: 4px; }
+  .chart-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .chart-caption { font-size: 0.83rem; color: var(--muted); margin-bottom: 6px; }
+  .chart-svg-wrap { position: relative; }
+  svg.bars { width: 100%; height: auto; display: block; overflow: visible; }
+  svg.bars .bar { fill: var(--chart-area); cursor: pointer; }
+  svg.bars.count .bar { fill: var(--chart-count); }
+  svg.bars .bar:hover, svg.bars .bar.hover { opacity: 0.82; }
+  svg.bars .gridline { stroke: var(--border); stroke-width: 1; }
+  svg.bars .axis-label {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    fill: var(--muted);
+  }
+  svg.bars .callout-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    fill: var(--text);
+  }
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--text);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    padding: 5px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    transform: translate(-50%, -130%);
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    z-index: 5;
+  }
+  .tooltip.visible { opacity: 1; }
+
+  footer.doc-foot {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 460px) {
+    .stat-correction { padding: 16px; }
+    .stat-block .stat-value { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="doc-head">
+    <div class="eyebrow">
+      <span><strong>PHASE 1 OF 5</strong></span>
+      <span>DATA SOURCING &amp; EXPLORATORY ANALYSIS</span>
+      <span>PORTUGAL, 2010&ndash;2024</span>
+      <span>STATUS: COMPLETE</span>
+    </div>
+    <h1>Data &amp; EDA</h1>
+    <p class="dek">A parametric catastrophe loss model for Portuguese wildfires. This note covers how the underlying data was actually sourced, a scope decision made along the way, and what stress-testing that data against an independent source turned up.</p>
+  </header>
+
+  <section>
+    <h2>Why this exists</h2>
+    <p>The end goal is a full frequency&ndash;severity catastrophe model: a Poisson process for how often large wildfires occur, a Lognormal/Pareto fit for how big they get, and a Monte Carlo engine tying the two together into portfolio-level risk metrics (VaR, Expected Shortfall) in the style of reinsurance pricing work. None of that is credible without a real, defensible data foundation underneath it, which is what Phase 1 was for.</p>
+  </section>
+
+  <section>
+    <h2>Sourcing real data</h2>
+    <p>EFFIS (the European Forest Fire Information System) is the obvious place to start, but its public Statistics Portal turned out to be a JavaScript single-page app with no accessible API behind it. A live, scriptable substitute was found instead: <strong>Our World in Data</strong> mirrors GWIS (the Global Wildfire Information System, run by the same JRC/Copernicus programme as EFFIS) as plain CSV, which gave real annual fire-count and burnt-area series with no authentication needed.</p>
+    <p>That covers annual totals, but not individual fires. For that, EFFIS's own <strong>Data Request Form</strong> was submitted (a one-time manual request, not an API), asking for the "Burnt area mapped using Sentinel-2/MODIS images" product for Portugal, 2010&ndash;2024. It came back with EFFIS's real Rapid Damage Assessment database: <strong>6,533 usable individual fire records</strong> after cleaning, each with a real date, a real region, and a real burned area in hectares.</p>
+  </section>
+
+  <section>
+    <h2>A scope decision, made deliberately</h2>
+    <p>EFFIS's Rapid Damage Assessment only maps fires of roughly <strong>30 hectares or larger</strong>; by its own documentation, that subset still accounts for an estimated 75&ndash;80% of total burnt area despite being a minority of total fire count. Rather than patch that gap with a separate all-fires source, the model's frequency measure was defined to match: a "fire event" here means a mapped ~30ha+ fire, not every ignition in Portugal.</p>
+    <div class="callout">
+      <div class="label">Rationale</div>
+      <p>For a catastrophe model built around tail risk (VaR, Expected Shortfall), the fires below that threshold don't move the numbers that matter. Keeping frequency and severity drawn from the same real dataset was worth more than counting every small fire.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>What the data shows</h2>
+    <p>Fifteen years of real large-fire activity in Portugal is not a smooth series. 2017 is the outlier every Portuguese wildfire dataset has to reckon with; less obviously, <strong>2023 was unusually quiet for Portugal specifically</strong> even though it was a severe wildfire year across the EU as a whole, while 2024 (Madeira, and a large mainland fire in Centro) was comparatively severe again.</p>
+
+    <div class="chart-block">
+      <div class="chart-title">Annual burnt area, large fires only</div>
+      <div class="chart-caption">Hectares per year, real EFFIS Rapid Damage Assessment data, 2010&ndash;2024</div>
+      <div class="chart-svg-wrap">
+        <svg class="bars" id="chart-area" viewBox="0 0 640 220" role="img" aria-label="Bar chart of annual burnt area in hectares from 2010 to 2024, peaking in 2017"></svg>
+        <div class="tooltip" id="tooltip-area"></div>
+      </div>
+    </div>
+
+    <div class="chart-block">
+      <div class="chart-title">Annual large-fire count</div>
+      <div class="chart-caption">Number of mapped ~30ha+ fires per year. Note counts climb sharply from 2021 even where area doesn't, i.e. more, smaller "large" fires in recent years</div>
+      <div class="chart-svg-wrap">
+        <svg class="bars count" id="chart-count" viewBox="0 0 640 180" role="img" aria-label="Bar chart of annual large fire counts from 2010 to 2024, rising sharply after 2020"></svg>
+        <div class="tooltip" id="tooltip-count"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Stress-testing the data</h2>
+    <p>The live OWID/GWIS series wasn't dropped once the real per-fire data arrived; it was kept specifically as an independent check. That check surfaced two real discrepancies, which were investigated rather than waved away.</p>
+    <ul class="findings">
+      <li><strong>Count:</strong> real large-fire counts sometimes exceed OWID's all-fire counts in the same year (e.g. 2022). Explained: EFFIS maps burnt-area polygons from MODIS; OWID/GWIS counts VIIRS thermal-anomaly detections, a different sensor with a different definition of "one fire."</li>
+      <li class="resolved"><strong>Area, and a statistics correction along the way:</strong> summed large-fire area first appeared to exceed GWIS's total in every single year, averaging 116.6%, alarming if true. That figure was itself the problem: an unweighted mean of yearly ratios over-counts small years. See below.</li>
+    </ul>
+
+    <div class="stat-correction">
+      <div class="stat-block wrong">
+        <span class="stat-label">Unweighted mean of ratios</span>
+        <span class="stat-value">116.6%</span>
+      </div>
+      <span class="stat-arrow">&rarr;</span>
+      <div class="stat-block right">
+        <span class="stat-label">Total &divide; total, all 15 years</span>
+        <span class="stat-value">106.1%</span>
+      </div>
+      <p class="stat-note">The correct comparison sums real large-fire area and GWIS's total separately across all fifteen years, then takes one ratio. 106% is a modest overshoot, well inside the normal disagreement range between independent satellite burnt-area products.</p>
+    </div>
+
+    <p>Two things came out of digging further. First, a real and separate defect: <strong>69 rows</strong> in the raw export were exact duplicates, same parish, area, and timestamp under a different id, all tiny fires, concentrated in 2021&ndash;2024. Confirmed and deduplicated (~104 ha of the 1.71M ha total, immaterial to the model, but worth fixing since it was a genuine artifact rather than a methodology gap). Second, a pattern that remains genuinely open: a three-year rolling view shows ~92&ndash;108% agreement through 2012&ndash;2019, rising to ~114&ndash;134% for 2020&ndash;2024. The duplicate rows were ruled out as the cause. Left as an open question rather than forced to a tidy answer.</p>
+  </section>
+
+  <section>
+    <h2>Loss calibration</h2>
+    <p>No public source publishes verified EUR loss for an individual fire; only annual or period aggregates from ICNF, OECD, and press reporting. A single documented calibration constant converts burnt area to euros:</p>
+    <div class="table-wrap">
+      <table>
+        <caption>EUR/ha calibration reference</caption>
+        <thead>
+          <tr><th>Basis</th><th class="num">EUR / ha</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Long-run average, 1975&ndash;2021</td><td class="num">1,923</td><td>ICNF cumulative burnt area &amp; losses</td></tr>
+          <tr><td>2017 season (for comparison)</td><td class="num">2,865</td><td>Implied by reported 2017 losses vs. burnt area</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>That gap between the two rows is itself the headline limitation: real losses aren't linear in area. A wildland&ndash;urban-interface fire like 2017 costs far more per hectare than a remote forest fire, because fatalities and structures dominate, not hectares. The 1,923 EUR/ha figure is applied uniformly for now, with that caveat stated plainly rather than hidden.</p>
+    <p>Sense-checked anyway: the model's 2017 total comes out around <strong>&euro;1.08bn</strong> against published estimates of roughly <strong>&euro;1.5bn</strong> for that season: same order of magnitude, in the direction the calibration gap above would predict.</p>
+  </section>
+
+  <section>
+    <h2>Limitations, stated plainly</h2>
+    <ul class="findings">
+      <li>Frequency and severity cover fires &ge;~30ha only, a deliberate scope choice, not a hidden gap.</li>
+      <li>Loss is derived from a single EUR/ha constant, not observed per-fire.</li>
+      <li>The 2020&ndash;2024 area cross-validation pattern is unexplained.</li>
+      <li>Location is NUTS2-level only; no sub-regional or spatial modeling, by design.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Next</h2>
+    <p>Phase 2 fits the actual distributions (Poisson frequency, Lognormal/Pareto severity, with Kolmogorov&ndash;Smirnov and Anderson&ndash;Darling goodness-of-fit) against this real dataset.</p>
+  </section>
+
+  <footer class="doc-foot">
+    <span>github.com/DanPhnx/pt-wildfire-catmodel</span>
+    <span>Dan &middot; September 2026</span>
+  </footer>
+
+</main>
+
+<script>
+(function () {
+  var areaData = [
+    [2010, 127932], [2011, 64849], [2012, 101342], [2013, 154203], [2014, 11574],
+    [2015, 47465], [2016, 166096], [2017, 563682], [2018, 37356], [2019, 34665],
+    [2020, 65786], [2021, 31576], [2022, 111993], [2023, 43018], [2024, 147588]
+  ];
+  var countData = [
+    [2010, 307], [2011, 319], [2012, 239], [2013, 359], [2014, 35],
+    [2015, 177], [2016, 322], [2017, 414], [2018, 86], [2019, 222],
+    [2020, 465], [2021, 748], [2022, 1210], [2023, 913], [2024, 717]
+  ];
+
+  function buildChart(svgId, tooltipId, data, opts) {
+    var svg = document.getElementById(svgId);
+    var tooltip = document.getElementById(tooltipId);
+    var vb = svg.viewBox.baseVal;
+    var W = vb.width, H = vb.height;
+    var padLeft = 44, padRight = 4, padTop = 14, padBottom = 26;
+    var plotW = W - padLeft - padRight;
+    var plotH = H - padTop - padBottom;
+    var max = Math.max.apply(null, data.map(function (d) { return d[1]; }));
+    var niceMax = max * 1.12;
+    var n = data.length;
+    var gap = 6;
+    var barW = (plotW - gap * (n - 1)) / n;
+    var ns = 'http://www.w3.org/2000/svg';
+
+    [0, 1].forEach(function (frac) {
+      var y = padTop + plotH * (1 - frac);
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', padLeft); line.setAttribute('x2', W - padRight);
+      line.setAttribute('y1', y); line.setAttribute('y2', y);
+      line.setAttribute('class', 'gridline');
+      svg.appendChild(line);
+
+      var valueLabel = document.createElementNS(ns, 'text');
+      valueLabel.setAttribute('x', padLeft - 6);
+      valueLabel.setAttribute('y', y + 3);
+      valueLabel.setAttribute('text-anchor', 'end');
+      valueLabel.setAttribute('class', 'axis-label');
+      valueLabel.textContent = opts.fmtAxis(frac === 0 ? 0 : niceMax);
+      svg.appendChild(valueLabel);
+    });
+
+    data.forEach(function (d, i) {
+      var year = d[0], value = d[1];
+      var x = padLeft + i * (barW + gap);
+      var barH = (value / niceMax) * plotH;
+      var y = padTop + plotH - barH;
+
+      var rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('x', x);
+      rect.setAttribute('y', y);
+      rect.setAttribute('width', barW);
+      rect.setAttribute('height', Math.max(barH, 1));
+      rect.setAttribute('rx', 2);
+      rect.setAttribute('class', 'bar');
+      svg.appendChild(rect);
+
+      if (opts.calloutYears.indexOf(year) !== -1) {
+        var label = document.createElementNS(ns, 'text');
+        label.setAttribute('x', x + barW / 2);
+        label.setAttribute('y', y - 6);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('class', 'callout-label');
+        label.textContent = opts.fmt(value);
+        svg.appendChild(label);
+      }
+
+      if (i % 2 === 0 || n <= 10) {
+        var axisLabel = document.createElementNS(ns, 'text');
+        axisLabel.setAttribute('x', x + barW / 2);
+        axisLabel.setAttribute('y', H - 8);
+        axisLabel.setAttribute('text-anchor', 'middle');
+        axisLabel.setAttribute('class', 'axis-label');
+        axisLabel.textContent = "'" + String(year).slice(2);
+        svg.appendChild(axisLabel);
+      }
+
+      function showTip(evt) {
+        rect.classList.add('hover');
+        tooltip.textContent = year + ': ' + opts.fmt(value);
+        var wrapRect = svg.parentElement.getBoundingClientRect();
+        var barRect = rect.getBoundingClientRect();
+        tooltip.style.left = (barRect.left - wrapRect.left + barRect.width / 2) + 'px';
+        tooltip.style.top = (barRect.top - wrapRect.top) + 'px';
+        tooltip.classList.add('visible');
+      }
+      function hideTip() {
+        rect.classList.remove('hover');
+        tooltip.classList.remove('visible');
+      }
+      rect.addEventListener('mouseenter', showTip);
+      rect.addEventListener('mouseleave', hideTip);
+      rect.addEventListener('focus', showTip);
+      rect.addEventListener('blur', hideTip);
+      rect.setAttribute('tabindex', '0');
+      rect.setAttribute('role', 'img');
+      rect.setAttribute('aria-label', year + ': ' + opts.fmt(value));
+    });
+  }
+
+  buildChart('chart-area', 'tooltip-area', areaData, {
+    calloutYears: [2017, 2023, 2024],
+    fmt: function (v) { return v.toLocaleString('en-GB') + ' ha'; },
+    fmtAxis: function (v) { return v === 0 ? '0' : Math.round(v / 1000) + 'k ha'; }
+  });
+  buildChart('chart-count', 'tooltip-count', countData, {
+    calloutYears: [2021, 2022],
+    fmt: function (v) { return v.toLocaleString('en-GB') + ' fires'; },
+    fmtAxis: function (v) { return v === 0 ? '0' : Math.round(v) + ''; }
+  });
+})();
+</script>
+</body>
+</html>
