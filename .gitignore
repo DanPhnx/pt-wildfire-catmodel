@@ -27,10 +27,16 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Raw/processed data (fetched, not versioned)
+# Raw data: snapshot CSVs are committed for reproducibility (see 01_eda.ipynb),
+# anything else fetched into data/raw/ is not
 data/raw/*
-data/processed/*
 !data/raw/.gitkeep
+!data/raw/effis_annual_fire_counts.csv
+!data/raw/gwis_annual_burnt_area.csv
+!data/raw/annual_loss_calibration.csv
+
+# Processed data is derived and regenerable from the committed raw snapshot, not versioned
+data/processed/*
 !data/processed/.gitkeep
 
 # Simulation output
