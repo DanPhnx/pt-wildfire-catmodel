@@ -296,10 +296,16 @@ the user, and what changed:
   ~425,000 ha) is a candidate second anchor needing verification of both
   figures. Not verified: the Madeira 2016 and 2003 damage figures come from
   the proposed PRD revision.
-- **Pending on the user:** submit an EFFIS Data Request Form for
-  2000-01-01 to 2025-12-31 (would test how far back the mapped product goes
-  and add 2025); look at what ICNF publishes (per-fire or size-class data,
-  or annual totals only). Scope left as the revised PRD has it.
+- **Pending on the user:** submit EFFIS Data Request Forms for the gaps
+  only, not the 2010-2024 window already held: (a) 2000-01-01 to
+  2010-12-31, which tests how far back the mapped product goes, with 2010
+  deliberately overlapping so the new export can be compared with the
+  committed snapshot (same records and areas = same data version); (b)
+  2025-01-01 to 2025-12-31, provisional. Two small requests also avoid the
+  truncation seen on the first request. Do not replace the committed
+  2010-2024 file; add the new exports alongside it. Also look at what ICNF
+  publishes (per-fire or size-class data, or annual totals only). Scope left
+  as the revised PRD has it.
 - **Not yet done:** per the revised PRD, `Estimated_Loss_EUR` should be
   filled only where a sourced figure exists; today every event gets the
   central-scenario value.
