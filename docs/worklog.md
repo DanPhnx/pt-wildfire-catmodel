@@ -191,8 +191,44 @@ methodology differences." Concrete checks run against the raw data:
   validation section, flagged as plausible but not confirmed against the
   activation record itself.
 
+## Sensor break in the EFFIS export, found and fixed (Sept 2026 review)
+
+A review of Phase 1 found that the "all records are ~30 ha or larger"
+assumption above is only true for part of the export. This supersedes the
+"Frequency scope decision" and the count/area discrepancy notes above.
+
+- `map_source` is `modis` for 2010-2018, `modis/sentinel2` for 2019 and
+  `sentinel2` for 2020-2024. The smallest mapped fire drops from 12-24 ha to
+  1 ha in 2020, and 62-82% of 2020-2024 records are under 30 ha (1-9% in
+  2010-2018). Unfiltered mean annual counts go from ~248 (2010-2019) to
+  ~811 (2020-2024).
+- That was previously read as "more, smaller large fires in recent years".
+  It is a sensor artifact. It would also have broken Phase 2 (a non-
+  stationary frequency series) and the Phase 4 backtest (last five years =
+  entirely the Sentinel-2 era).
+- Fix: `MIN_FIRE_AREA_HA = 30` applied uniformly in
+  `load_effis_fire_database`. Leaves 3,291 of 6,533 cleaned records and
+  98.2% of mapped area. Filtered mean counts: 232/yr (2010-2019) vs 194/yr
+  (2020-2024), i.e. no trend.
+- Count discrepancy vs OWID: fully resolved by the filter (0 of 13 years
+  where EFFIS >= 30 ha count exceeds OWID's all-fire count). The MODIS-vs-
+  VIIRS explanation recorded above was wrong for this.
+- Area discrepancy vs GWIS: only partly resolved. Weighted ratio 106.1% ->
+  104.2%. 2010-2019 stays ~102%; 2020-2024 goes ~120% -> ~112%. An initial
+  expectation that the filter would explain most of the gap was too
+  optimistic (it explains roughly 40% of the excess). Residual is still
+  open; candidate causes are GWIS's latest years being less finalized, and
+  Sentinel-2 10 m perimeters vs 250 m MODIS.
+- Annual counts are strongly overdispersed (variance/mean ~44), flagged for
+  Phase 2 (test Negative Binomial).
+- Lesson: an assumed property of a dataset taken from its documentation (here,
+  "maps fires of ~30 ha or larger") should be checked against the data
+  itself, per subgroup (here, per year and per `map_source`) before it is
+  used as a modeling premise.
+
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't
   started yet.
-- The 2020-2024 area-ratio divergence (above) is still an open question.
+- The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
+- Copernicus EMS 2023-24 loss data not yet obtained; modeled 2023/2024 totals not yet compared with published figures.

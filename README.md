@@ -18,16 +18,18 @@ docs/              Phase implementation plan and worklog
 
 ## Data sources
 
-- **EFFIS Rapid Damage Assessment (MODIS-based) fire database**: the
-  primary source. Real per-fire dates, real NUTS2 region locations, and
-  real burned areas for Portugal, 2010-2024 (6,533 usable records after
-  dropping non-physical and duplicate rows, see below), obtained via
-  EFFIS's official Data Request Form as a one-time manual submission
-  (EFFIS's live Statistics Portal has no public JSON API). This product
-  maps fires of roughly 30ha or larger; **a "fire event" in this model
-  means a mapped ~30ha+ fire, not every ignition** - a deliberate scope
-  choice, not a hidden gap (see "Data gaps and assumptions" in
-  `01_eda.ipynb`).
+- **EFFIS Rapid Damage Assessment fire database**: the primary source.
+  Real per-fire dates, real NUTS2 region locations, and real burned areas
+  for Portugal, 2010-2024 (6,533 records after dropping non-physical and
+  duplicate rows, see below), obtained via EFFIS's official Data Request
+  Form as a one-time manual submission (EFFIS's live Statistics Portal has
+  no public JSON API). The mapping source changes from MODIS (2010-2018,
+  smallest fire ~12-24 ha) to Sentinel-2 (2020-2024, down to 1 ha), so
+  raw counts are not comparable across the window. **A "fire event" in
+  this model is a mapped fire of at least 30 ha, applied to every year
+  (`MIN_FIRE_AREA_HA`)**, leaving 3,291 events and 98.2% of mapped area -
+  a deliberate scope choice, not a hidden gap (see "Data gaps and
+  assumptions" in `01_eda.ipynb`).
 - **GWIS** (Global Wildfire Information System, JRC/Copernicus): live
   annual fire-count and burnt-area series for Portugal, fetched via Our
   World in Data's CSV mirror. Used only as an independent cross-check
@@ -44,26 +46,28 @@ docs/              Phase implementation plan and worklog
   `docs/worklog.md`, and the "Data gaps and assumptions" section in
   `01_eda.ipynb`.
 
-**Known cross-validation discrepancies (investigated, not hidden):**
+**Known cross-validation findings (investigated, not hidden):**
 
-- **Count**: real EFFIS large-fire counts are sometimes *higher* than
-  OWID's all-fire counts for the same year (e.g. 2022). Explained by
-  differing methodologies: EFFIS maps burnt-area polygons from MODIS,
-  OWID/GWIS counts VIIRS thermal-anomaly point detections, a different
-  sensor and a different definition of "one fire."
-- **Area**: an earlier pass reported large-fire area exceeding GWIS's
-  total in every year by a "mean ratio" of 116.6%, which looked alarming.
-  That statistic was itself misleading, an unweighted mean over-weights
-  small years. The properly weighted total-to-total ratio across all 15
-  years is **106.1%**, a modest overshoot within the normal disagreement
-  range between independent satellite burnt-area products. A smaller, real
-  puzzle remains: a 3-year rolling view shows ~92-108% agreement through
-  2012-2019, rising to ~114-134% for 2020-2024, not fully explained (ruled
-  out: a confirmed 69-row duplicate-record artifact in the raw export,
-  fixed below, was too small, ~104 ha, to be the cause).
+- **Count (resolved)**: unfiltered, real EFFIS counts exceeded OWID's
+  all-fire counts in some years (e.g. 2022: 1,210 vs 465). The cause was
+  the un-thresholded Sentinel-2 records (62-82% of 2020-2024 rows are under
+  30 ha), not a MODIS-vs-VIIRS methodology difference as first assumed.
+  With the 30 ha filter the EFFIS count is below OWID's in every year with
+  OWID data.
+- **Area (narrowed, not closed)**: an earlier pass reported a "mean ratio"
+  of 116.6% versus GWIS, which was misleading (an unweighted mean
+  over-weights small years). The weighted total-to-total ratio is 106.1%
+  unfiltered and **104.2%** with the 30 ha filter. By period, the filtered
+  ratio is ~102% for 2010-2019 and ~112% for 2020-2024 (~120% unfiltered),
+  so the small-fire records explain part of the recent-years excess but not
+  all of it. The remainder is an open question, not caused by the
+  duplicate records below.
+- **Overdispersion**: annual 30 ha+ counts have a variance-to-mean ratio of
+  ~44 (a Poisson gives ~1), so Phase 2 tests a Negative Binomial alongside
+  Poisson.
 - A separate, confirmed **data-quality defect** was also found and fixed:
   69 exact duplicate records (same parish, area, and timestamp under a
-  different id, all tiny fires, concentrated in 2021-2024) are now
+  different id, all tiny fires, concentrated in 2021-2024) are
   deduplicated in `load_effis_fire_database`.
 
 See the notebook's cross-validation section for the full per-year working.
