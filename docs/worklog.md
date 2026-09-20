@@ -226,9 +226,33 @@ assumption above is only true for part of the export. This supersedes the
   itself, per subgroup (here, per year and per `map_source`) before it is
   used as a modeling premise.
 
+## Published-loss benchmarks for 2024 (Sept 2026 review)
+
+Looked for published 2023/2024 loss figures to test the EUR/ha calibration,
+and for Copernicus EMS data, since the PRD lists both as Phase 1 tasks.
+
+- Found and recorded in `data/raw/published_loss_benchmarks.csv` (each row
+  sourced): AGIF national 2024 burnt area 137,667 ha (EFFIS 30 ha+: 143,684 ha,
+  +4%); forest-sector loss EUR 67m (forest only); provisional insured claims
+  >EUR 17m (Sep 15-19 fires only); Copernicus EMS burnt area 111,323.6 ha
+  across four September 2024 areas of interest, EMSR760 alone 21,262.5 ha.
+- **Not found: any published total economic loss for 2023 or 2024.** The
+  EUR 638m figure in the AGIF report is state spending on the fire system,
+  not a loss. So the modeled 2024 total (~EUR 276m) is bracketed by
+  component figures (~EUR 84m measured floor) but not validated, and the
+  PRD's "within ~20% of published reports" test has no benchmark yet.
+- Corrected an earlier notebook claim: the 35,523 ha Centro record from
+  September 2024 was called "plausibly the fire behind EMSR760". Copernicus
+  reports 21,262.5 ha for EMSR760, so that cannot be the same perimeter.
+- The 2017 "sense check" (EUR 1.08bn modeled vs ~EUR 1.5bn) is not
+  independent: it restates the 1,923 vs 2,865 EUR/ha calibration gap.
+- Copernicus EMS per-fire geometries were not downloaded; only the
+  published burnt-area totals were used. Per-fire EMS polygons would need
+  geospatial tooling outside the PRD stack and are not needed for the model.
+
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't
   started yet.
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
-- Copernicus EMS 2023-24 loss data not yet obtained; modeled 2023/2024 totals not yet compared with published figures.
+- No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" domain-validation test uses (Kit).

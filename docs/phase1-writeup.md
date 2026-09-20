@@ -80,12 +80,18 @@ No public source publishes verified EUR loss for an individual fire; only annual
 
 That gap between the two rows is itself the headline limitation: real losses aren't linear in area. A wildland-urban-interface fire like 2017 costs far more per hectare than a remote forest fire, because fatalities and structures dominate, not hectares. The 1,923 EUR/ha figure is applied uniformly for now, with that caveat stated plainly rather than hidden.
 
-Sense-checked anyway: the model's 2017 total comes out around **&euro;1.08bn** against published estimates of roughly **&euro;1.5bn** for that season: same order of magnitude, in the direction the calibration gap above would predict.
+Two things follow from that, and neither is hidden:
+
+- **Modeled loss is burnt area times a constant.** The loss distribution has exactly the shape of the area distribution, and VaR/ES in euros are the area VaR/ES rescaled. That is acceptable for this scope, but it is best read as a burnt-area model with a euro scale.
+- **External checks are weaker than they look.** 2024 burnt area agrees well with AGIF's national figure (143,684 ha vs 137,667 ha, +4%). For loss, the only published euro figures found are *components*: forest-sector loss of EUR 67m (forest only, excluding homes and infrastructure) and provisional insured claims above EUR 17m for the September fires, together ~EUR 84m against a modeled 2024 total of ~EUR 276m. That is a bracket, not a validation: no published *total* economic loss for 2023 or 2024 was found. The 2017 comparison (modeled EUR 1.08bn vs ~EUR 1.5bn reported) is not independent, since it just restates the calibration gap in the table above.
+
+The benchmarks and their sources are in `data/raw/published_loss_benchmarks.csv`. The PRD's "within ~20% of published reports" criterion needs a defined benchmark before Phase 4.
 
 ## Limitations
 
 - Frequency and severity cover fires of at least 30 ha only, applied uniformly to all years, a deliberate scope choice, not a hidden gap.
-- Loss is derived from a single EUR/ha constant, not observed per-fire.
+- Loss is derived from a single EUR/ha constant, not observed per-fire, so the euro loss distribution is the burnt-area distribution rescaled.
+- No published total economic loss was found for 2023 or 2024, so the loss level is bracketed by component figures rather than validated.
 - A ~12% area overshoot versus GWIS in 2020-2024 remains unexplained (102% in 2010-2019).
 - Annual counts are strongly overdispersed (variance/mean ~44), so a plain Poisson is unlikely to fit.
 - Location is NUTS2-level only; no sub-regional or spatial modeling, by design.

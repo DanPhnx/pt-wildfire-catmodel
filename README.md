@@ -39,9 +39,12 @@ docs/              Phase implementation plan and worklog
 - **ICNF / OECD / press reporting**: published aggregate wildfire loss
   figures (EUR), used to derive a documented EUR/hectare calibration
   constant since no source publishes verified loss per individual fire.
-- **Copernicus Emergency Management Service (EMS)**: named major-event
-  references (e.g. EMSR618 Serra da Estrela 2022, EMSR748 Central Madeira
-  2024) used as tail-plausibility anchors, cited in notebook comments.
+- **Copernicus Emergency Management Service (EMS)** and **AGIF/APS
+  reporting**: published burnt-area totals and component loss figures for
+  2024 (forest-sector loss, insured claims), recorded with sources in
+  `data/raw/published_loss_benchmarks.csv` and used as external checks. No
+  published total economic loss for 2023 or 2024 was found, so these bracket
+  the calibration rather than validate it.
 - Full sourcing rationale and known data gaps: see `docs/phase1-plan.md`,
   `docs/worklog.md`, and the "Data gaps and assumptions" section in
   `01_eda.ipynb`.
