@@ -16,7 +16,7 @@ EFFIS (the European Forest Fire Information System) is the obvious place to star
 
 That covers annual totals, but not individual fires. For that, EFFIS's own **Data Request Form** was submitted (a one-time manual request, not an API), asking for the "Burnt area mapped using Sentinel-2/MODIS images" product for Portugal, 2010-2024. It came back with EFFIS's real Rapid Damage Assessment database: **6,533 usable individual fire records** after cleaning, each with a real date, a real region, and a real burned area in hectares.
 
-## A scope decision, made deliberately
+## Scope decision
 
 EFFIS's Rapid Damage Assessment only maps fires of roughly **30 hectares or larger**; by its own documentation, that subset still accounts for an estimated 75-80% of total burnt area despite being a minority of total fire count. Rather than patch that gap with a separate all-fires source, the model's frequency measure was defined to match: a "fire event" here means a mapped ~30ha+ fire, not every ignition in Portugal.
 
@@ -77,7 +77,7 @@ That gap between the two rows is itself the headline limitation: real losses are
 
 Sense-checked anyway: the model's 2017 total comes out around **&euro;1.08bn** against published estimates of roughly **&euro;1.5bn** for that season: same order of magnitude, in the direction the calibration gap above would predict.
 
-## Limitations, stated plainly
+## Limitations
 
 - Frequency and severity cover fires &ge;~30ha only, a deliberate scope choice, not a hidden gap.
 - Loss is derived from a single EUR/ha constant, not observed per-fire.
