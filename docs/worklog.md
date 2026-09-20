@@ -250,6 +250,60 @@ and for Copernicus EMS data, since the PRD lists both as Phase 1 tasks.
   published burnt-area totals were used. Per-fire EMS polygons would need
   geospatial tooling outside the PRD stack and are not needed for the model.
 
+## Decisions and corrections after the revised-PRD review (Sept 2026)
+
+Reviewed the proposed PRD revision against the data. Decisions made with
+the user, and what changed:
+
+- **Mainland only (applied).** 48 raw records are Madeira (44) or Azores (4)
+  (`admlvl1` other than "Continente"); the 28 Madeira records that survived
+  cleaning were 1.9% of area. `load_effis_fire_database` now filters them.
+  Result: 3,263 events (was 3,291). This also corrected an earlier claim
+  that 2024 area agreed with AGIF "within 4%": mainland 137,564 ha vs AGIF
+  137,667 ha is 99.9%; the 4% came from including Madeira.
+- **Duplicate count corrected.** Earlier notes said "69 duplicates". 69 is
+  the number of rows sitting in duplicate sets (33 pairs and one triple); 35
+  are redundant copies and are what is removed (~104 ha). Cleaning waterfall:
+  6,608 -> 6,560 mainland -> 6,520 area > 0 -> 6,485 deduplicated -> 3,263 at
+  >= 30 ha.
+- **Recomputed on the mainland basis:** total-to-total area ratio vs GWIS
+  102.2% filtered (104.1% unfiltered); 2010-2019 100.7%, 2020-2024 108.1%
+  (116.0% unfiltered). The 30 ha filter explains about half of the
+  2020-2024 excess, not most of it. GWIS's "Portugal" may include the
+  islands, not checked.
+- **Frequency-severity dependence is real (bad).** Count vs median fire
+  size rho 0.58, permutation p = 0.026 (holds without 2017); an independent
+  model gives annual-area SD ~61k ha vs 134k ha observed and never produces
+  a 2017-sized year. Bad for the PRD's "count, then independent severities"
+  engine, but modelable.
+- **Event unit: fire-day clusters (decision).** Polygons on the same start
+  date are one event: 1,106 events, overdispersion ~6, count-size
+  correlation not significant. Clustering alone does not remove the
+  dependence (annual SD still ~1.85x the independent value), so Phase 2-3
+  add a year-level severity factor and a whole-year bootstrap cross-check.
+  **TO REVISIT LATER:** the fire-day rule (same start date, national
+  scope) is a simple first choice. Test multi-day windows (treaty hours-
+  clause style), and check the 2017-10-15 cluster's sensitivity to the
+  window.
+- **EUR/ha is a range, with one mainland anchor.** Built
+  `data/raw/loss_anchors.csv` (evidence table) and rebuilt
+  `annual_loss_calibration.csv` as low 487 / central 1,923 / high 2,593. The
+  old "2,865" high figure divided a 2017 loss by GWIS area; the new one uses
+  the same EFFIS mainland area basis as the model. 2017 EUSF total EUR
+  1,458m is derived by arithmetic (0.832% of GNI vs a EUR 1,051.6m
+  threshold), primary document not opened. Madeira 2016 (EUR 157m over
+  5,409 ha, ~EUR 29,000/ha) excluded as out of scope; 2003 (>EUR 800m,
+  ~425,000 ha) is a candidate second anchor needing verification of both
+  figures. Not verified: the Madeira 2016 and 2003 damage figures come from
+  the proposed PRD revision.
+- **Pending on the user:** submit an EFFIS Data Request Form for
+  2000-01-01 to 2025-12-31 (would test how far back the mapped product goes
+  and add 2025); look at what ICNF publishes (per-fire or size-class data,
+  or annual totals only). Scope left as the revised PRD has it.
+- **Not yet done:** per the revised PRD, `Estimated_Loss_EUR` should be
+  filled only where a sourced figure exists; today every event gets the
+  central-scenario value.
+
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't

@@ -310,20 +310,21 @@
   <section>
     <h2>Sourcing real data</h2>
     <p>EFFIS (the European Forest Fire Information System) is the obvious place to start, but its public Statistics Portal turned out to be a JavaScript single-page app with no accessible API behind it. A live, scriptable substitute was found instead: <strong>Our World in Data</strong> mirrors GWIS (the Global Wildfire Information System, run by the same JRC/Copernicus programme as EFFIS) as plain CSV, which gave real annual fire-count and burnt-area series with no authentication needed.</p>
-    <p>That covers annual totals, but not individual fires. For that, EFFIS's own <strong>Data Request Form</strong> was submitted (a one-time manual request, not an API), asking for the "Burnt area mapped using Sentinel-2/MODIS images" product for Portugal, 2010&ndash;2024. It came back with EFFIS's real Rapid Damage Assessment database: 6,608 individual fire records, <strong>6,533 after cleaning</strong>, each with a real date, a real region, and a real burned area in hectares. <strong>3,291 of those are at or above 30 ha and form the model dataset</strong>, for the reason in the next section.</p>
+    <p>That covers annual totals, but not individual fires. For that, EFFIS's own <strong>Data Request Form</strong> was submitted (a one-time manual request, not an API), asking for the "Burnt area mapped using Sentinel-2/MODIS images" product for Portugal, 2010&ndash;2024. It came back with EFFIS's real Rapid Damage Assessment database: 6,608 individual fire records, <strong>6,485 after cleaning</strong> (48 Madeira and Azores records, 40 with non-physical area, and 35 duplicate copies removed), each with a real date, a real region, and a real burned area in hectares. <strong>3,263 of those are mainland fires of at least 30 ha and form the model dataset</strong>, for the reason in the next section.</p>
   </section>
 
   <section>
     <h2>A scope decision, made deliberately</h2>
-    <p>EFFIS's documentation says its Rapid Damage Assessment maps fires of roughly <strong>30 hectares or larger</strong>, which still accounts for an estimated 75&ndash;80% of total burnt area despite being a minority of fire count. That holds for 2010&ndash;2018 (MODIS, smallest mapped fire 12&ndash;24 ha), but <strong>not for the whole export</strong>: the mapping source switches to Sentinel-2 from 2019, the smallest mapped fire drops to 1 ha, and 62&ndash;82% of 2020&ndash;2024 records are under 30 ha (versus 1&ndash;9% in 2010&ndash;2018). Left unfiltered, mean annual counts jump from ~248 to ~811 for a sensor reason, not a hazard reason.</p>
-    <p>So a "fire event" here is defined explicitly: <strong>a mapped fire of at least 30 ha, applied uniformly to every year.</strong> That keeps 3,291 events and 98.2% of the mapped area.</p>
+    <p>The model covers <strong>mainland Portugal only</strong>; Madeira and the Azores behave differently and are excluded.</p>
+    <p>EFFIS's documentation says its Rapid Damage Assessment maps fires of roughly <strong>30 hectares or larger</strong>, which still accounts for an estimated 75&ndash;80% of total burnt area despite being a minority of fire count. That holds for 2010&ndash;2018 (MODIS, smallest mapped fire 12&ndash;24 ha), but <strong>not for the whole export</strong>: the mapping source switches to Sentinel-2 from 2019, the smallest mapped fire drops to 1 ha, and 63&ndash;82% of 2020&ndash;2024 records are under 30 ha (versus 1.5&ndash;9% in 2010&ndash;2018). Left unfiltered, mean annual counts jump from ~246 to ~804 for a sensor reason, not a hazard reason.</p>
+    <p>So a "fire event" here is defined explicitly: <strong>a mapped mainland fire of at least 30 ha, applied uniformly to every year.</strong> That keeps 3,263 events and 98.2% of the mapped area.</p>
     <div class="callout">
       <div class="label">Rationale</div>
       <p>For a catastrophe model built around tail risk (VaR, Expected Shortfall), the fires below that threshold don't move the numbers that matter. A consistent threshold matters more than counting every small fire: without it, the frequency series has a structural break in 2019&ndash;2020 that would corrupt distribution fitting and any backtest that holds out the last five years.</p>
     </div>
     <div class="callout">
       <div class="label">Correction</div>
-      <p>An earlier version of this note treated the whole export as a 30 ha+ dataset, read the post-2020 count rise as "more, smaller large fires", and attributed a count discrepancy against OWID to MODIS-vs-VIIRS methodology. All three were consequences of the unfiltered Sentinel-2 records. Everything below is recomputed on the filtered data.</p>
+      <p>An earlier version of this note treated the whole export as a 30 ha+ dataset, read the post-2020 count rise as "more, smaller large fires", and attributed a count discrepancy against OWID to MODIS-vs-VIIRS methodology; all three were consequences of the unfiltered Sentinel-2 records. It also included 28 Madeira records (1.9% of area), compared an all-Portugal total with AGIF's mainland figure, and described "69 duplicates" when 35 redundant copies were removed (69 rows sit in duplicate sets). Everything below is recomputed on the corrected data.</p>
     </div>
   </section>
 
@@ -333,7 +334,7 @@
 
     <div class="chart-block">
       <div class="chart-title">Annual burnt area, fires of 30 ha or more</div>
-      <div class="chart-caption">Hectares per year, real EFFIS Rapid Damage Assessment data, 30 ha filter, 2010&ndash;2024</div>
+      <div class="chart-caption">Hectares per year, mainland, real EFFIS Rapid Damage Assessment data, 30 ha filter, 2010&ndash;2024</div>
       <div class="chart-svg-wrap">
         <svg class="bars" id="chart-area" viewBox="0 0 640 220" role="img" aria-label="Bar chart of annual burnt area in hectares from 2010 to 2024, peaking in 2017"></svg>
         <div class="tooltip" id="tooltip-area"></div>
@@ -342,20 +343,27 @@
 
     <div class="chart-block">
       <div class="chart-title">Annual fire count, 30 ha or more</div>
-      <div class="chart-caption">Number of mapped 30 ha+ fires per year. With a consistent threshold there is no upward trend, but the series is strongly overdispersed (variance/mean ~44), so a plain Poisson is unlikely to fit</div>
+      <div class="chart-caption">Number of mapped mainland 30 ha+ fires per year. With a consistent threshold there is no upward trend, but the series is strongly overdispersed (variance/mean ~44), so a plain Poisson is unlikely to fit</div>
       <div class="chart-svg-wrap">
         <svg class="bars count" id="chart-count" viewBox="0 0 640 180" role="img" aria-label="Bar chart of annual fire counts of 30 ha or more from 2010 to 2024, peaking in 2017"></svg>
         <div class="tooltip" id="tooltip-count"></div>
       </div>
     </div>
+
+    <p>With a consistent threshold, counts show no upward trend (mean 231 per year in 2010&ndash;2019, 191 in 2020&ndash;2024), but they are strongly overdispersed. Two further properties matter for the simulation, and both are visible in the data:</p>
+    <ul class="findings">
+      <li><strong>Bad years have both more and bigger fires.</strong> Annual count vs median fire size has a Spearman rho of 0.58 (permutation p = 0.026, holding without 2017). A model drawing counts and sizes independently gives an annual-area SD of ~61k ha against ~134k ha observed, and essentially never produces a 2017-sized year.</li>
+      <li><strong>Fires cluster in time.</strong> On 15 October 2017, 33 polygons burned 196,476 ha; the largest single polygon that year is 67,521 ha. The top 10 fire-days hold 36% of all area. Grouping by start date gives 1,106 fire-day events: overdispersion falls to ~6 and the count&ndash;size correlation is no longer significant, but the annual-area SD is still ~1.85&times; the independent value, so a year-level severity factor is still needed.</li>
+    </ul>
+    <p>Plan for Phases 2&ndash;3: model fire-day events, add a year-level severity factor, and cross-check against a whole-year bootstrap. The fire-day definition is a simple first choice and is flagged to revisit (multi-day windows, in the style of a treaty hours clause).</p>
   </section>
 
   <section>
     <h2>Stress-testing the data</h2>
     <p>The live OWID/GWIS series wasn't dropped once the real per-fire data arrived; it was kept specifically as an independent check. That check surfaced two discrepancies, and chasing them is what exposed the sensor break above.</p>
     <ul class="findings">
-      <li class="resolved"><strong>Count: resolved.</strong> Unfiltered, EFFIS counts exceeded OWID's all-fire counts in some years (e.g. 2022: 1,210 vs 465). With the 30 ha filter the EFFIS count is below OWID's in <strong>every</strong> year with OWID data (0 of 13 exceed it).</li>
-      <li><strong>Area: narrowed, not closed.</strong> Summed EFFIS area first appeared to exceed GWIS's total in every year, averaging 116.6%. That figure was itself misleading: an unweighted mean of yearly ratios over-counts small years.</li>
+      <li class="resolved"><strong>Count: resolved.</strong> Unfiltered, EFFIS counts exceeded OWID's all-fire counts in some years (e.g. 2022: 1,204 vs 465). With the 30 ha filter the EFFIS count (257 in 2022) is below OWID's in <strong>every</strong> year with OWID data (0 of 13 exceed it).</li>
+      <li><strong>Area: narrowed, not closed.</strong> Summed EFFIS area first appeared to exceed GWIS's total in every year, averaging 116.6% in the first pass. That figure was itself misleading: an unweighted mean of yearly ratios over-counts small years.</li>
     </ul>
 
     <div class="stat-correction">
@@ -366,46 +374,48 @@
       <span class="stat-arrow">&rarr;</span>
       <div class="stat-block right">
         <span class="stat-label">Total &divide; total, 30 ha filter</span>
-        <span class="stat-value">104.2%</span>
+        <span class="stat-value">102.2%</span>
       </div>
-      <p class="stat-note">The correct comparison sums EFFIS area and GWIS's total separately across all fifteen years, then takes one ratio (106.1% before the 30 ha filter). Split by period: 2010&ndash;2019 is 102.2%; 2020&ndash;2024 is 112.0% (120.0% unfiltered).</p>
+      <p class="stat-note">The correct comparison sums EFFIS area and GWIS's total separately across all fifteen years, then takes one ratio (104.1% before the 30 ha filter). Split by period: 2010&ndash;2019 is 100.7%; 2020&ndash;2024 is 108.1% (116.0% unfiltered).</p>
     </div>
 
-    <p>The filter leaves 2010&ndash;2019 essentially unchanged but only brings 2020&ndash;2024 from ~120% down to ~112%: sub-30 ha fires explain part of the recent-years excess, not all of it. The remainder is unexplained. The <strong>69 duplicate rows</strong> (tiny fires, ~104 ha, concentrated in 2021&ndash;2024) were a confirmed export artifact and are deduplicated, but are far too small to be the cause. Candidate causes not yet checked are GWIS's most recent years being less finalized, and Sentinel-2's 10&nbsp;m burn-scar perimeters differing from 250&nbsp;m MODIS. A ~12% overshoot in the last five years is small enough not to change the model's conclusions, so it is left as a documented open question.</p>
+    <p>The filter leaves 2010&ndash;2019 essentially unchanged and brings 2020&ndash;2024 from 116.0% to 108.1%: sub-30 ha fires explain about half of the recent-years excess, and an ~8% overshoot remains. It is not caused by the duplicate records (~104 ha in total). Candidate causes not yet checked: GWIS's most recent years being less finalized, Sentinel-2's 10&nbsp;m burn-scar perimeters differing from 250&nbsp;m MODIS, and whether GWIS's "Portugal" includes the islands (which would make the mainland ratio slightly understated). An overshoot of that size does not change the model's conclusions, so it is left as a documented open question.</p>
   </section>
 
   <section>
     <h2>Loss calibration</h2>
-    <p>No public source publishes verified EUR loss for an individual fire; only annual or period aggregates from ICNF, OECD, and press reporting. A single documented calibration constant converts burnt area to euros:</p>
+    <p>No public source publishes verified EUR loss for an individual fire, and published totals for the same event differ widely with what they include (Pedr&oacute;g&atilde;o Grande 2017: a &euro;497m government estimate against ~&euro;200m of direct losses). So EUR/ha is carried as a <strong>three-point range, not a calibrated constant</strong>:</p>
     <div class="table-wrap">
       <table>
-        <caption>EUR/ha calibration reference</caption>
+        <caption>EUR/ha scenarios</caption>
         <thead>
-          <tr><th>Basis</th><th class="num">EUR / ha</th><th>Source</th></tr>
+          <tr><th>Scenario</th><th class="num">EUR / ha</th><th>Basis</th></tr>
         </thead>
         <tbody>
-          <tr><td>Long-run average, 1975&ndash;2021</td><td class="num">1,923</td><td>ICNF cumulative burnt area &amp; losses</td></tr>
-          <tr><td>2017 season (for comparison)</td><td class="num">2,865</td><td>Implied by reported 2017 losses vs. burnt area</td></tr>
+          <tr><td>Low</td><td class="num">487</td><td>2024 forest-sector loss (&euro;67m, AGIF) / 137,667 ha. A component of loss, so a floor</td></tr>
+          <tr><td>Central</td><td class="num">1,923</td><td>ICNF-derived 1975&ndash;2021 average (~&euro;10bn over ~5.2M ha), via OECD/press; 2017 is ~15% of its numerator</td></tr>
+          <tr><td>High</td><td class="num">2,593</td><td>2017 EU Solidarity Fund total direct damage (&euro;1,458m) / 562,348 ha mainland burnt area in this dataset</td></tr>
         </tbody>
       </table>
     </div>
-    <p>That gap between the two rows is itself the headline limitation: real losses aren't linear in area. A wildland&ndash;urban-interface fire like 2017 costs far more per hectare than a remote forest fire, because fatalities and structures dominate, not hectares. The 1,923 EUR/ha figure is applied uniformly for now, with that caveat stated plainly rather than hidden.</p>
-    <p>Two things follow from that, and neither is hidden:</p>
+    <p>Only <strong>one official mainland total</strong> sits inside the data window (2017), so the range is an assumption bracketed by evidence, not a calibration. Candidate anchors not used, and why, are in <code>data/raw/loss_anchors.csv</code>: Madeira 2016 (&euro;157m over 5,409 ha is ~&euro;29,000/ha, about 11&times; the mainland 2017 figure, unverified, and out of scope), and 2003 (&gt;&euro;800m over ~425,000 ha, ~&euro;1,900/ha; a possible second anchor, but both figures need verifying). The 2017 total is derived by arithmetic (0.832% of GNI against a &euro;1,051.6m threshold at 0.6%) from figures seen in search results; the primary document was not opened. Ordinary years have no anchor and are likely below the catastrophic-year values.</p>
+    <p>Three things follow, and none is hidden:</p>
     <ul class="findings">
-      <li><strong>Modeled loss is burnt area times a constant.</strong> The loss distribution has exactly the shape of the area distribution, and VaR/ES in euros are the area VaR/ES rescaled. That is acceptable for this scope, but it is best read as a burnt-area model with a euro scale.</li>
-      <li><strong>External checks are weaker than they look.</strong> 2024 burnt area agrees well with AGIF's national figure (143,684 ha vs 137,667 ha, +4%). For loss, the only published euro figures found are <em>components</em>: forest-sector loss of &euro;67m (forest only, excluding homes and infrastructure) and provisional insured claims above &euro;17m for the September fires, together ~&euro;84m against a modeled 2024 total of ~&euro;276m. That is a bracket, not a validation: no published <em>total</em> economic loss for 2023 or 2024 was found. The 2017 comparison (modeled &euro;1.08bn vs ~&euro;1.5bn reported) is not independent, since it just restates the calibration gap in the table above.</li>
+      <li><strong>Modeled loss is burnt area times a constant</strong> per scenario. The loss distribution has exactly the shape of the area distribution, and VaR/ES in euros are the area VaR/ES rescaled. It is best read as a burnt-area model with a euro scale.</li>
+      <li><strong>The 2017 check is only partly independent.</strong> The central scenario gives &euro;1,081m, 74% of the official &euro;1,458m. The central figure isn't calibrated to 2017, but 2017 is part of its numerator; the high scenario matches by construction.</li>
+      <li><strong>2024 can be bracketed, not validated.</strong> Mainland burnt area agrees with AGIF (137,564 ha vs 137,667 ha, 99.9%). For loss, the only published euro figures are components: forest-sector loss of &euro;67m and provisional insured claims above &euro;17m, together ~&euro;84m, against a central-scenario total of ~&euro;265m. No published total economic loss for 2023 or 2024 was found.</li>
     </ul>
-    <p>The benchmarks and their sources are in <code>data/raw/published_loss_benchmarks.csv</code>. The PRD's "within ~20% of published reports" criterion needs a defined benchmark before Phase 4.</p>
+    <p>The benchmarks and their sources are in <code>data/raw/published_loss_benchmarks.csv</code>. The PRD's "within published range" criterion needs a defined benchmark before Phase 4.</p>
   </section>
 
   <section>
     <h2>Limitations, stated plainly</h2>
     <ul class="findings">
-      <li>Frequency and severity cover fires of at least 30 ha only, applied uniformly to all years, a deliberate scope choice, not a hidden gap.</li>
-      <li>Loss is derived from a single EUR/ha constant, not observed per-fire, so the euro loss distribution is the burnt-area distribution rescaled.</li>
+      <li>Mainland Portugal only; frequency and severity cover fires of at least 30 ha, applied uniformly to all years, a deliberate scope choice, not a hidden gap.</li>
+      <li>Loss is derived from a EUR/ha range with a single official mainland anchor (2017), not observed per-fire, so the euro loss distribution is the burnt-area distribution rescaled.</li>
       <li>No published total economic loss was found for 2023 or 2024, so the loss level is bracketed by component figures rather than validated.</li>
-      <li>A ~12% area overshoot versus GWIS in 2020&ndash;2024 remains unexplained (102% in 2010&ndash;2019).</li>
-      <li>Annual counts are strongly overdispersed (variance/mean ~44), so a plain Poisson is unlikely to fit.</li>
+      <li>An ~8% area overshoot versus GWIS in 2020&ndash;2024 remains unexplained (100.7% in 2010&ndash;2019).</li>
+      <li>Annual counts are strongly overdispersed (variance/mean ~44), and count, fire size and same-day clustering are dependent, so a plain independent Poisson&ndash;lognormal model is unlikely to fit or to reproduce a 2017-sized year.</li>
       <li>Location is NUTS2-level only; no sub-regional or spatial modeling, by design.</li>
     </ul>
   </section>
@@ -425,14 +435,14 @@
 <script>
 (function () {
   var areaData = [
-    [2010, 127560], [2011, 64442], [2012, 101053], [2013, 153408], [2014, 11550],
-    [2015, 47286], [2016, 165853], [2017, 563530], [2018, 37144], [2019, 33451],
-    [2020, 62557], [2021, 25855], [2022, 104379], [2023, 36855], [2024, 143684]
+    [2010, 120693], [2011, 64442], [2012, 95379], [2013, 153408], [2014, 11550],
+    [2015, 47286], [2016, 160444], [2017, 562348], [2018, 37144], [2019, 33181],
+    [2020, 61280], [2021, 25855], [2022, 104339], [2023, 31053], [2024, 137564]
   ];
   var countData = [
-    [2010, 292], [2011, 303], [2012, 227], [2013, 326], [2014, 34],
-    [2015, 169], [2016, 312], [2017, 408], [2018, 78], [2019, 172],
-    [2020, 175], [2021, 187], [2022, 258], [2023, 168], [2024, 182]
+    [2010, 290], [2011, 303], [2012, 223], [2013, 326], [2014, 34],
+    [2015, 169], [2016, 310], [2017, 405], [2018, 78], [2019, 168],
+    [2020, 172], [2021, 187], [2022, 257], [2023, 162], [2024, 179]
   ];
 
   function buildChart(svgId, tooltipId, data, opts) {

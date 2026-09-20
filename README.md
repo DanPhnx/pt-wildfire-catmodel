@@ -20,15 +20,16 @@ docs/              Phase implementation plan and worklog
 
 - **EFFIS Rapid Damage Assessment fire database**: the primary source.
   Real per-fire dates, real NUTS2 region locations, and real burned areas
-  for Portugal, 2010-2024 (6,533 records after dropping non-physical and
-  duplicate rows, see below), obtained via EFFIS's official Data Request
-  Form as a one-time manual submission (EFFIS's live Statistics Portal has
-  no public JSON API). The mapping source changes from MODIS (2010-2018,
-  smallest fire ~12-24 ha) to Sentinel-2 (2020-2024, down to 1 ha), so
-  raw counts are not comparable across the window. **A "fire event" in
-  this model is a mapped fire of at least 30 ha, applied to every year
-  (`MIN_FIRE_AREA_HA`)**, leaving 3,291 events and 98.2% of mapped area -
-  a deliberate scope choice, not a hidden gap (see "Data gaps and
+  for Portugal, 2010-2024, obtained via EFFIS's official Data Request Form
+  as a one-time manual submission (EFFIS's live Statistics Portal has no
+  public JSON API). Cleaning: 6,608 raw records -> mainland only (48
+  Madeira/Azores dropped) -> non-physical area dropped (40) -> duplicates
+  removed (35) -> **3,263 events**. The mapping source changes from MODIS
+  (2010-2018, smallest fire ~12-24 ha) to Sentinel-2 (2020-2024, down to
+  1 ha), so raw counts are not comparable across the window. **A "fire
+  event" in this model is a mapped mainland fire of at least 30 ha, applied
+  to every year (`MIN_FIRE_AREA_HA`)**, keeping 98.2% of mapped area - a
+  deliberate scope choice, not a hidden gap (see "Data gaps and
   assumptions" in `01_eda.ipynb`).
 - **GWIS** (Global Wildfire Information System, JRC/Copernicus): live
   annual fire-count and burnt-area series for Portugal, fetched via Our
@@ -36,9 +37,12 @@ docs/              Phase implementation plan and worklog
   against the real per-fire data, not as a modeling input - two real
   discrepancies were found and documented rather than reconciled (see
   below).
-- **ICNF / OECD / press reporting**: published aggregate wildfire loss
-  figures (EUR), used to derive a documented EUR/hectare calibration
-  constant since no source publishes verified loss per individual fire.
+- **Loss calibration (EUR/ha)**: a three-point range, not a calibrated
+  constant - low ~487 (2024 forest-sector loss/ha, a floor), central ~1,923
+  (ICNF-derived long-run average via OECD/press), high ~2,593 (2017 EU
+  Solidarity Fund total direct damage / 2017 mainland burnt area). No
+  source publishes verified loss per individual fire. Evidence and
+  candidate anchors: `data/raw/loss_anchors.csv`.
 - **Copernicus Emergency Management Service (EMS)** and **AGIF/APS
   reporting**: published burnt-area totals and component loss figures for
   2024 (forest-sector loss, insured claims), recorded with sources in
@@ -52,26 +56,29 @@ docs/              Phase implementation plan and worklog
 **Known cross-validation findings (investigated, not hidden):**
 
 - **Count (resolved)**: unfiltered, real EFFIS counts exceeded OWID's
-  all-fire counts in some years (e.g. 2022: 1,210 vs 465). The cause was
-  the un-thresholded Sentinel-2 records (62-82% of 2020-2024 rows are under
+  all-fire counts in some years (e.g. 2022: 1,204 vs 465). The cause was
+  the un-thresholded Sentinel-2 records (63-82% of 2020-2024 rows are under
   30 ha), not a MODIS-vs-VIIRS methodology difference as first assumed.
   With the 30 ha filter the EFFIS count is below OWID's in every year with
   OWID data.
 - **Area (narrowed, not closed)**: an earlier pass reported a "mean ratio"
   of 116.6% versus GWIS, which was misleading (an unweighted mean
-  over-weights small years). The weighted total-to-total ratio is 106.1%
-  unfiltered and **104.2%** with the 30 ha filter. By period, the filtered
-  ratio is ~102% for 2010-2019 and ~112% for 2020-2024 (~120% unfiltered),
-  so the small-fire records explain part of the recent-years excess but not
-  all of it. The remainder is an open question, not caused by the
-  duplicate records below.
-- **Overdispersion**: annual 30 ha+ counts have a variance-to-mean ratio of
-  ~44 (a Poisson gives ~1), so Phase 2 tests a Negative Binomial alongside
-  Poisson.
+  over-weights small years). The weighted total-to-total ratio is 104.1%
+  unfiltered and **102.2%** with the 30 ha filter. By period, the filtered
+  ratio is 100.7% for 2010-2019 and 108.1% for 2020-2024 (116.0%
+  unfiltered), so the small-fire records explain about half of the
+  recent-years excess. The remaining ~8% is an open question, not caused
+  by the duplicate records below.
+- **Overdispersion and dependence**: annual 30 ha+ counts have a
+  variance-to-mean ratio of ~44 (a Poisson gives ~1); annual count and
+  median fire size are positively correlated (rho 0.58, p = 0.026); and
+  fires cluster in time (2017-10-15: 33 polygons, 196,476 ha). Phase 2-3
+  therefore tests a Negative Binomial, models fire-day events, and adds a
+  year-level severity factor.
 - A separate, confirmed **data-quality defect** was also found and fixed:
-  69 exact duplicate records (same parish, area, and timestamp under a
-  different id, all tiny fires, concentrated in 2021-2024) are
-  deduplicated in `load_effis_fire_database`.
+  35 redundant duplicate records (same parish, area, and timestamp under a
+  different id, all 1-12 ha, ~104 ha in total, concentrated in 2021-2024;
+  69 rows sit in duplicate sets) are removed in `load_effis_fire_database`.
 
 See the notebook's cross-validation section for the full per-year working.
 
