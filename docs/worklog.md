@@ -296,23 +296,65 @@ the user, and what changed:
   ~425,000 ha) is a candidate second anchor needing verification of both
   figures. Not verified: the Madeira 2016 and 2003 damage figures come from
   the proposed PRD revision.
-- **Pending on the user:** submit EFFIS Data Request Forms for the gaps
-  only, not the 2010-2024 window already held: (a) 2000-01-01 to
-  2010-12-31, which tests how far back the mapped product goes, with 2010
-  deliberately overlapping so the new export can be compared with the
-  committed snapshot (same records and areas = same data version); (b)
-  2025-01-01 to 2025-12-31, provisional. Two small requests also avoid the
-  truncation seen on the first request. Do not replace the committed
-  2010-2024 file; add the new exports alongside it. Also look at what ICNF
-  publishes (per-fire or size-class data, or annual totals only). Scope left
-  as the revised PRD has it.
+- **EFFIS re-export (done, see next section).** Still pending on the user:
+  look at what ICNF publishes (per-fire or size-class data, or annual
+  totals only). Scope left as the revised PRD has it.
 - **Not yet done:** per the revised PRD, `Estimated_Loss_EUR` should be
   filled only where a sourced figure exists; today every event gets the
   central-scenario value.
+
+## EFFIS re-export: 2008-2026 delivered, record set to 2009-2025 (Sept 2026)
+
+Requested a second EFFIS export (Portugal, 2000-01-01 to 2025-12-31) to
+extend the record and add 2025, as the revised PRD asks.
+
+- **Delivered:** 9,262 records, 2008-04-26 to 2026-09-17. **Nothing before
+  2008 came back**, so the PRD's 1980 target (and a 2000 start) is not
+  available from EFFIS; the record can grow by 2008, 2009 and 2025 only.
+  The file came without a readme; the earlier readme (same product) is kept
+  beside it with a note explaining this.
+- **Overlap check passed:** all 6,608 records for 2010-2024 match the
+  earlier export exactly (same ids; zero mismatches in area, dates,
+  locations, `map_source`, coordinates). Same data version, so the new file
+  replaces the old one (git history retains it) rather than sitting beside
+  it.
+- **Decision (user): 2009-2025.** 2008 excluded: 33 records, the first on
+  2008-04-26; 5,350 ha at >= 30 ha is 79% of GWIS's 6,762 ha, so it looks
+  real but low-information, with uncertain early-season coverage. 2026
+  excluded: partial year (to 17 Sept). 2025 included but provisional.
+  Loader now takes `start_year`/`end_year` (`START_YEAR = 2009`,
+  `MAX_YEAR = 2025`).
+- **Cleaning waterfall (2009-2025):** 9,262 -> 9,212 mainland (50 island
+  records) -> 7,900 in window (33 from 2008, 1,279 from 2026) -> 7,809 area
+  > 0 -> 7,749 deduplicated (60 redundant copies; 115 rows in duplicate
+  sets; ~157 ha) -> **3,785 events at >= 30 ha**.
+- **Everything recomputed:** mean counts 239 (2009-2019) vs 193 (2020-2025);
+  variance/mean ~41; GWIS ratio 102.9% filtered (104.7% unfiltered), 101.2%
+  for 2009-2019 and 106.5% for 2020-2025 (111.7% unfiltered), so the
+  filter explains close to half of the recent excess and ~6.5% remains;
+  count discrepancy vs OWID still 0 of 14 years. Dependence finding
+  strengthened slightly with more data: count vs median size rho 0.57,
+  permutation p = 0.019 (n = 17; p = 0.023 without 2017); annual-area SD
+  ~133k ha observed vs ~64k independent (2.1x). Fire-day events: 1,283,
+  overdispersion ~5.5, count-size rho 0.25 (not significant), annual SD
+  still ~1.8x the independent value.
+- **2025 checked against the revised PRD's claim:** 200 mainland events,
+  278,917 ha, vs "roughly 274,000-278,000 ha" in the PRD (about 0.3% above
+  the top of that range) and GWIS 266,907 ha (EFFIS is 104.5% of it). 2025
+  is 2nd by area but 9th by count: an average number of fires, very large
+  ones (83% of area in August; four polygons on 2025-08-10 cover 113,675
+  ha). A second extreme year of a different character from 2017, and
+  provisional. Modeled 2025 under the EUR/ha range: EUR 136m / 536m / 723m;
+  no published 2025 loss figure has been looked up yet.
+- **2003 and 2005** are not in the EFFIS export. The GWIS snapshot in
+  `data/raw/` has annual burnt area from 2002 (e.g. 2005: 332,485 ha),
+  usable as annual-area context but not for per-fire fits.
 
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't
   started yet.
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
-- No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" domain-validation test uses (Kit).
+- No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" domain-validation test uses (Kit). Also look up published 2025 loss figures.
+- Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
+- ICNF: find out what it publishes (per-fire / size-class vs annual totals); the 1980 target depends on this.
