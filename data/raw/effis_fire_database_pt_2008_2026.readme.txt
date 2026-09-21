@@ -1,3 +1,11 @@
+NOTE (added by this repo): this readme was delivered with an earlier EFFIS export (Portugal,
+2010-01-01 to 2024-12-31; the 'Date start'/'Date end' and 'File creation' lines below describe that
+export). The current file, effis_fire_database_pt_2008_2026.csv, came without a readme. It is a later
+export of the same product for Portugal: it starts 2008-04-26 and runs to 2026-09-17 (2026 is a partial
+year), and its 2010-2024 records are identical to the earlier export (same ids, areas, dates and
+locations). The product description below applies to both.
+------------------------------------------------------------------------------------------
+
 Data source: EFFIS/WILDFIRE Database
 Copyright: © European Union, 1995-2026
            https://ec.europa.eu/info/legal-notice_en

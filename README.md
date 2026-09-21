@@ -18,14 +18,20 @@ docs/              Phase implementation plan and worklog
 
 ## Data sources
 
-- **EFFIS Rapid Damage Assessment (MODIS-based) fire database**: the
-  primary source. Real per-fire dates, real NUTS2 region locations, and
-  real burned areas for Portugal, 2010-2024 (6,533 usable records after
-  dropping non-physical and duplicate rows, see below), obtained via
-  EFFIS's official Data Request Form as a one-time manual submission
-  (EFFIS's live Statistics Portal has no public JSON API). This product
-  maps fires of roughly 30ha or larger; **a "fire event" in this model
-  means a mapped ~30ha+ fire, not every ignition** - a deliberate scope
+- **EFFIS Rapid Damage Assessment fire database**: the primary source.
+  Real per-fire dates, real NUTS2 region locations, and real burned areas
+  for Portugal, obtained via EFFIS's official Data Request Form as a
+  one-time manual submission (EFFIS's live Statistics Portal has no public
+  JSON API). The export runs 2008-04-26 to 2026-09-17; nothing earlier came
+  back. **The record used is 2009-2025** (2008 has only 33 records; 2026 is
+  a partial year; 2025 is provisional). Cleaning: 9,262 raw records ->
+  mainland only (50 Madeira/Azores dropped) -> 2009-2025 window ->
+  non-physical area dropped (91) -> duplicates removed (60) -> **3,785
+  events at >= 30 ha**. The mapping source changes from MODIS (to 2018,
+  smallest fire ~12-24 ha) to Sentinel-2 (2020-2025, down to 1 ha), so raw
+  counts are not comparable across the window. **A "fire event" in this
+  model is a mapped mainland fire of at least 30 ha, applied to every year
+  (`MIN_FIRE_AREA_HA`)**, keeping 98.2% of mapped area - a deliberate scope
   choice, not a hidden gap (see "Data gaps and assumptions" in
   `01_eda.ipynb`).
 - **GWIS** (Global Wildfire Information System, JRC/Copernicus): live
@@ -34,44 +40,56 @@ docs/              Phase implementation plan and worklog
   against the real per-fire data, not as a modeling input - two real
   discrepancies were found and documented rather than reconciled (see
   below).
-- **ICNF / OECD / press reporting**: published aggregate wildfire loss
-  figures (EUR), used to derive a documented EUR/hectare calibration
-  constant since no source publishes verified loss per individual fire.
-- **Copernicus Emergency Management Service (EMS)**: named major-event
-  references (e.g. EMSR618 Serra da Estrela 2022, EMSR748 Central Madeira
-  2024) used as tail-plausibility anchors, cited in notebook comments.
+- **Loss calibration (EUR/ha)**: a three-point range, not a calibrated
+  constant - low ~487 (2024 forest-sector loss/ha, a floor), central ~1,923
+  (ICNF-derived long-run average via OECD/press), high ~2,593 (2017 EU
+  Solidarity Fund total direct damage / 2017 mainland burnt area). No
+  source publishes verified loss per individual fire. Evidence and
+  candidate anchors: `data/raw/loss_anchors.csv`.
+- **Copernicus Emergency Management Service (EMS)** and **AGIF/APS
+  reporting**: published burnt-area totals and component loss figures for
+  2024 (forest-sector loss, insured claims), recorded with sources in
+  `data/raw/published_loss_benchmarks.csv` and used as external checks. No
+  published total economic loss for 2023 or 2024 was found, so these bracket
+  the calibration rather than validate it.
 - Full sourcing rationale and known data gaps: see `docs/phase1-plan.md`,
   `docs/worklog.md`, and the "Data gaps and assumptions" section in
   `01_eda.ipynb`.
 
-**Known cross-validation discrepancies (investigated, not hidden):**
+**Known cross-validation findings (investigated, not hidden):**
 
-- **Count**: real EFFIS large-fire counts are sometimes *higher* than
-  OWID's all-fire counts for the same year (e.g. 2022). Explained by
-  differing methodologies: EFFIS maps burnt-area polygons from MODIS,
-  OWID/GWIS counts VIIRS thermal-anomaly point detections, a different
-  sensor and a different definition of "one fire."
-- **Area**: an earlier pass reported large-fire area exceeding GWIS's
-  total in every year by a "mean ratio" of 116.6%, which looked alarming.
-  That statistic was itself misleading, an unweighted mean over-weights
-  small years. The properly weighted total-to-total ratio across all 15
-  years is **106.1%**, a modest overshoot within the normal disagreement
-  range between independent satellite burnt-area products. A smaller, real
-  puzzle remains: a 3-year rolling view shows ~92-108% agreement through
-  2012-2019, rising to ~114-134% for 2020-2024, not fully explained (ruled
-  out: a confirmed 69-row duplicate-record artifact in the raw export,
-  fixed below, was too small, ~104 ha, to be the cause).
+- **Count (resolved)**: unfiltered, real EFFIS counts exceeded OWID's
+  all-fire counts in some years (e.g. 2022: 1,204 vs 465). The cause was
+  the un-thresholded Sentinel-2 records (63-82% of 2020-2025 rows are under
+  30 ha), not a MODIS-vs-VIIRS methodology difference as first assumed.
+  With the 30 ha filter the EFFIS count is below OWID's in every year with
+  OWID data.
+- **Area (narrowed, not closed)**: an earlier pass reported a "mean ratio"
+  of 116.6% versus GWIS, which was misleading (an unweighted mean
+  over-weights small years). The weighted total-to-total ratio is 104.7%
+  unfiltered and **102.9%** with the 30 ha filter. By period, the filtered
+  ratio is 101.2% for 2009-2019 and 106.5% for 2020-2025 (111.7%
+  unfiltered), so the small-fire records explain close to half of the
+  recent-years excess. The remaining ~6.5% is an open question, not caused
+  by the duplicate records below.
+- **Overdispersion and dependence**: annual 30 ha+ counts have a
+  variance-to-mean ratio of ~41 (a Poisson gives ~1); annual count and
+  median fire size are positively correlated (rho 0.57, p = 0.019); and
+  fires cluster in time (2017-10-15: 33 polygons, 196,476 ha). Phase 2-3
+  therefore tests a Negative Binomial, models fire-day events, and adds a
+  year-level severity factor.
 - A separate, confirmed **data-quality defect** was also found and fixed:
-  69 exact duplicate records (same parish, area, and timestamp under a
-  different id, all tiny fires, concentrated in 2021-2024) are now
-  deduplicated in `load_effis_fire_database`.
+  60 redundant duplicate records (same parish, area, and timestamp under a
+  different id, all 1-12 ha, ~157 ha in total, concentrated in 2021-2025;
+  115 rows sit in duplicate sets) are removed in
+  `load_effis_fire_database`.
 
 See the notebook's cross-validation section for the full per-year working.
 
 **Reproducibility note:** the EFFIS per-fire database is a static,
 one-time export committed to git, so it carries no drift risk. OWID/GWIS
 (used only for cross-validation) is a live, continually-updated source, so
-that part of the pipeline is capped at `MAX_YEAR = 2024` and its fetched
+that part of the pipeline is capped at `START_YEAR = 2009` and `MAX_YEAR = 2025` and its fetched
 CSVs are also committed as the authoritative snapshot behind the published
 comparison.
 

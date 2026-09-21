@@ -1,3 +1,4 @@
 label,eur_per_ha,source
-long_run_1975_2021,1923.076923076923,"ICNF cumulative 1975-2021 burnt area & losses, via OECD/press reporting"
-catastrophic_2017,2865.044923904407,2017 fire season total losses vs. 2017 burnt area (October 2017 Iberian wildfires)
+low,486.68163031082247,"2024 forest-sector loss (AGIF) / 2024 national burnt area; a floor, not a total"
+central,1923.076923076923,"ICNF cumulative 1975-2021 burnt area & losses, via OECD/press reporting"
+high,2593.056256979664,2017 EU Solidarity Fund total direct damage / 2017 mainland burnt area in this dataset

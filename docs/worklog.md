@@ -191,8 +191,170 @@ methodology differences." Concrete checks run against the raw data:
   validation section, flagged as plausible but not confirmed against the
   activation record itself.
 
+## Sensor break in the EFFIS export, found and fixed (Sept 2026 review)
+
+A review of Phase 1 found that the "all records are ~30 ha or larger"
+assumption above is only true for part of the export. This supersedes the
+"Frequency scope decision" and the count/area discrepancy notes above.
+
+- `map_source` is `modis` for 2010-2018, `modis/sentinel2` for 2019 and
+  `sentinel2` for 2020-2024. The smallest mapped fire drops from 12-24 ha to
+  1 ha in 2020, and 62-82% of 2020-2024 records are under 30 ha (1-9% in
+  2010-2018). Unfiltered mean annual counts go from ~248 (2010-2019) to
+  ~811 (2020-2024).
+- That was previously read as "more, smaller large fires in recent years".
+  It is a sensor artifact. It would also have broken Phase 2 (a non-
+  stationary frequency series) and the Phase 4 backtest (last five years =
+  entirely the Sentinel-2 era).
+- Fix: `MIN_FIRE_AREA_HA = 30` applied uniformly in
+  `load_effis_fire_database`. Leaves 3,291 of 6,533 cleaned records and
+  98.2% of mapped area. Filtered mean counts: 232/yr (2010-2019) vs 194/yr
+  (2020-2024), i.e. no trend.
+- Count discrepancy vs OWID: fully resolved by the filter (0 of 13 years
+  where EFFIS >= 30 ha count exceeds OWID's all-fire count). The MODIS-vs-
+  VIIRS explanation recorded above was wrong for this.
+- Area discrepancy vs GWIS: only partly resolved. Weighted ratio 106.1% ->
+  104.2%. 2010-2019 stays ~102%; 2020-2024 goes ~120% -> ~112%. An initial
+  expectation that the filter would explain most of the gap was too
+  optimistic (it explains roughly 40% of the excess). Residual is still
+  open; candidate causes are GWIS's latest years being less finalized, and
+  Sentinel-2 10 m perimeters vs 250 m MODIS.
+- Annual counts are strongly overdispersed (variance/mean ~44), flagged for
+  Phase 2 (test Negative Binomial).
+- Lesson: an assumed property of a dataset taken from its documentation (here,
+  "maps fires of ~30 ha or larger") should be checked against the data
+  itself, per subgroup (here, per year and per `map_source`) before it is
+  used as a modeling premise.
+
+## Published-loss benchmarks for 2024 (Sept 2026 review)
+
+Looked for published 2023/2024 loss figures to test the EUR/ha calibration,
+and for Copernicus EMS data, since the PRD lists both as Phase 1 tasks.
+
+- Found and recorded in `data/raw/published_loss_benchmarks.csv` (each row
+  sourced): AGIF national 2024 burnt area 137,667 ha (EFFIS 30 ha+: 143,684 ha,
+  +4%); forest-sector loss EUR 67m (forest only); provisional insured claims
+  >EUR 17m (Sep 15-19 fires only); Copernicus EMS burnt area 111,323.6 ha
+  across four September 2024 areas of interest, EMSR760 alone 21,262.5 ha.
+- **Not found: any published total economic loss for 2023 or 2024.** The
+  EUR 638m figure in the AGIF report is state spending on the fire system,
+  not a loss. So the modeled 2024 total (~EUR 276m) is bracketed by
+  component figures (~EUR 84m measured floor) but not validated, and the
+  PRD's "within ~20% of published reports" test has no benchmark yet.
+- Corrected an earlier notebook claim: the 35,523 ha Centro record from
+  September 2024 was called "plausibly the fire behind EMSR760". Copernicus
+  reports 21,262.5 ha for EMSR760, so that cannot be the same perimeter.
+- The 2017 "sense check" (EUR 1.08bn modeled vs ~EUR 1.5bn) is not
+  independent: it restates the 1,923 vs 2,865 EUR/ha calibration gap.
+- Copernicus EMS per-fire geometries were not downloaded; only the
+  published burnt-area totals were used. Per-fire EMS polygons would need
+  geospatial tooling outside the PRD stack and are not needed for the model.
+
+## Decisions and corrections after the revised-PRD review (Sept 2026)
+
+Reviewed the proposed PRD revision against the data. Decisions made with
+the user, and what changed:
+
+- **Mainland only (applied).** 48 raw records are Madeira (44) or Azores (4)
+  (`admlvl1` other than "Continente"); the 28 Madeira records that survived
+  cleaning were 1.9% of area. `load_effis_fire_database` now filters them.
+  Result: 3,263 events (was 3,291). This also corrected an earlier claim
+  that 2024 area agreed with AGIF "within 4%": mainland 137,564 ha vs AGIF
+  137,667 ha is 99.9%; the 4% came from including Madeira.
+- **Duplicate count corrected.** Earlier notes said "69 duplicates". 69 is
+  the number of rows sitting in duplicate sets (33 pairs and one triple); 35
+  are redundant copies and are what is removed (~104 ha). Cleaning waterfall:
+  6,608 -> 6,560 mainland -> 6,520 area > 0 -> 6,485 deduplicated -> 3,263 at
+  >= 30 ha.
+- **Recomputed on the mainland basis:** total-to-total area ratio vs GWIS
+  102.2% filtered (104.1% unfiltered); 2010-2019 100.7%, 2020-2024 108.1%
+  (116.0% unfiltered). The 30 ha filter explains about half of the
+  2020-2024 excess, not most of it. GWIS's "Portugal" may include the
+  islands, not checked.
+- **Frequency-severity dependence is real (bad).** Count vs median fire
+  size rho 0.58, permutation p = 0.026 (holds without 2017); an independent
+  model gives annual-area SD ~61k ha vs 134k ha observed and never produces
+  a 2017-sized year. Bad for the PRD's "count, then independent severities"
+  engine, but modelable.
+- **Event unit: fire-day clusters (decision).** Polygons on the same start
+  date are one event: 1,106 events, overdispersion ~6, count-size
+  correlation not significant. Clustering alone does not remove the
+  dependence (annual SD still ~1.85x the independent value), so Phase 2-3
+  add a year-level severity factor and a whole-year bootstrap cross-check.
+  **TO REVISIT LATER:** the fire-day rule (same start date, national
+  scope) is a simple first choice. Test multi-day windows (treaty hours-
+  clause style), and check the 2017-10-15 cluster's sensitivity to the
+  window.
+- **EUR/ha is a range, with one mainland anchor.** Built
+  `data/raw/loss_anchors.csv` (evidence table) and rebuilt
+  `annual_loss_calibration.csv` as low 487 / central 1,923 / high 2,593. The
+  old "2,865" high figure divided a 2017 loss by GWIS area; the new one uses
+  the same EFFIS mainland area basis as the model. 2017 EUSF total EUR
+  1,458m is derived by arithmetic (0.832% of GNI vs a EUR 1,051.6m
+  threshold), primary document not opened. Madeira 2016 (EUR 157m over
+  5,409 ha, ~EUR 29,000/ha) excluded as out of scope; 2003 (>EUR 800m,
+  ~425,000 ha) is a candidate second anchor needing verification of both
+  figures. Not verified: the Madeira 2016 and 2003 damage figures come from
+  the proposed PRD revision.
+- **EFFIS re-export (done, see next section).** Still pending on the user:
+  look at what ICNF publishes (per-fire or size-class data, or annual
+  totals only). Scope left as the revised PRD has it.
+- **Not yet done:** per the revised PRD, `Estimated_Loss_EUR` should be
+  filled only where a sourced figure exists; today every event gets the
+  central-scenario value.
+
+## EFFIS re-export: 2008-2026 delivered, record set to 2009-2025 (Sept 2026)
+
+Requested a second EFFIS export (Portugal, 2000-01-01 to 2025-12-31) to
+extend the record and add 2025, as the revised PRD asks.
+
+- **Delivered:** 9,262 records, 2008-04-26 to 2026-09-17. **Nothing before
+  2008 came back**, so the PRD's 1980 target (and a 2000 start) is not
+  available from EFFIS; the record can grow by 2008, 2009 and 2025 only.
+  The file came without a readme; the earlier readme (same product) is kept
+  beside it with a note explaining this.
+- **Overlap check passed:** all 6,608 records for 2010-2024 match the
+  earlier export exactly (same ids; zero mismatches in area, dates,
+  locations, `map_source`, coordinates). Same data version, so the new file
+  replaces the old one (git history retains it) rather than sitting beside
+  it.
+- **Decision (user): 2009-2025.** 2008 excluded: 33 records, the first on
+  2008-04-26; 5,350 ha at >= 30 ha is 79% of GWIS's 6,762 ha, so it looks
+  real but low-information, with uncertain early-season coverage. 2026
+  excluded: partial year (to 17 Sept). 2025 included but provisional.
+  Loader now takes `start_year`/`end_year` (`START_YEAR = 2009`,
+  `MAX_YEAR = 2025`).
+- **Cleaning waterfall (2009-2025):** 9,262 -> 9,212 mainland (50 island
+  records) -> 7,900 in window (33 from 2008, 1,279 from 2026) -> 7,809 area
+  > 0 -> 7,749 deduplicated (60 redundant copies; 115 rows in duplicate
+  sets; ~157 ha) -> **3,785 events at >= 30 ha**.
+- **Everything recomputed:** mean counts 239 (2009-2019) vs 193 (2020-2025);
+  variance/mean ~41; GWIS ratio 102.9% filtered (104.7% unfiltered), 101.2%
+  for 2009-2019 and 106.5% for 2020-2025 (111.7% unfiltered), so the
+  filter explains close to half of the recent excess and ~6.5% remains;
+  count discrepancy vs OWID still 0 of 14 years. Dependence finding
+  strengthened slightly with more data: count vs median size rho 0.57,
+  permutation p = 0.019 (n = 17; p = 0.023 without 2017); annual-area SD
+  ~133k ha observed vs ~64k independent (2.1x). Fire-day events: 1,283,
+  overdispersion ~5.5, count-size rho 0.25 (not significant), annual SD
+  still ~1.8x the independent value.
+- **2025 checked against the revised PRD's claim:** 200 mainland events,
+  278,917 ha, vs "roughly 274,000-278,000 ha" in the PRD (about 0.3% above
+  the top of that range) and GWIS 266,907 ha (EFFIS is 104.5% of it). 2025
+  is 2nd by area but 9th by count: an average number of fires, very large
+  ones (83% of area in August; four polygons on 2025-08-10 cover 113,675
+  ha). A second extreme year of a different character from 2017, and
+  provisional. Modeled 2025 under the EUR/ha range: EUR 136m / 536m / 723m;
+  no published 2025 loss figure has been looked up yet.
+- **2003 and 2005** are not in the EFFIS export. The GWIS snapshot in
+  `data/raw/` has annual burnt area from 2002 (e.g. 2005: 332,485 ha),
+  usable as annual-area context but not for per-fire fits.
+
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't
   started yet.
-- The 2020-2024 area-ratio divergence (above) is still an open question.
+- The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
+- No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" domain-validation test uses (Kit). Also look up published 2025 loss figures.
+- Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
+- ICNF: find out what it publishes (per-fire / size-class vs annual totals); the 1980 target depends on this.

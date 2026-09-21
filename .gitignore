@@ -34,8 +34,10 @@ data/raw/*
 !data/raw/effis_annual_fire_counts.csv
 !data/raw/gwis_annual_burnt_area.csv
 !data/raw/annual_loss_calibration.csv
-!data/raw/effis_fire_database_pt_2010_2024.csv
-!data/raw/effis_fire_database_pt_2010_2024.readme.txt
+!data/raw/published_loss_benchmarks.csv
+!data/raw/loss_anchors.csv
+!data/raw/effis_fire_database_pt_2008_2026.csv
+!data/raw/effis_fire_database_pt_2008_2026.readme.txt
 
 # Processed data is derived and regenerable from the committed raw snapshot, not versioned
 data/processed/*
