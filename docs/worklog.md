@@ -350,6 +350,37 @@ extend the record and add 2025, as the revised PRD asks.
   `data/raw/` has annual burnt area from 2002 (e.g. 2005: 332,485 ha),
   usable as annual-area context but not for per-fire fits.
 
+## Inflation adjustment to 2025 euros (Sept 2026)
+
+Revised-PRD Phase 1 item "inflation-adjust losses to 2025 euros". Chosen
+design (user): two per-fire columns, one in the euros of the fire's own
+year and one in 2025 euros.
+
+- **Deflator:** Eurostat `prc_hicp_aind`, Portugal, all-items, annual
+  average index (2015 = 100), fetched in the notebook and committed as
+  `data/raw/pt_hicp_annual.csv` (same snapshot pattern as OWID). Uplifts to
+  2025: x1.022 from 2024, x1.194 from 2021, x1.221 from 2017, x1.526 from
+  2003. HICP is a general consumer index, not construction cost.
+- **Columns:** `Estimated_Loss_EUR` (each fire's own-year euros) and
+  `Estimated_Loss_EUR_2025`. Per-fire loss is still area x the central
+  EUR/ha for every event; "fill only where sourced" is still pending.
+- **Restated EUR/ha (2025 prices):** low 497 (was 487), central 2,296 (was
+  1,923), high 3,167 (was 2,593). Low and high have known price years (2024,
+  2017). **Central's price year is unknown** (cumulative 1975-2021 total in
+  mixed-year euros, via OECD/press): assumed 2021 (`CENTRAL_PRICE_YEAR`),
+  the smallest possible uplift, so it is a floor and likely understated.
+  Change the constant to test sensitivity.
+- **Effects on earlier claims:** the 2017 check moves from 74% to 72% (in
+  2017 euros, central EUR 1,057m vs official EUR 1,458m). 2024 central
+  total is EUR 309m in 2024 euros (was 265m), against a EUR 84m component
+  floor (27%). Modeled 2025 (provisional): EUR 139m / 640m / 883m in 2025
+  euros. Madeira 2016 restates to ~EUR 36,000/ha (2025 prices) and 2003 to
+  ~EUR 2,900/ha, which lies between central and high, so the central
+  scenario sits below both catastrophic anchors.
+- **Assumption to keep visible:** real EUR/ha constant over time (no value
+  growth); the PRD's +/-5%/yr value-growth sensitivity is the place to test
+  it.
+
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't

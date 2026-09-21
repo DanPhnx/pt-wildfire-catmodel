@@ -36,6 +36,7 @@ data/raw/*
 !data/raw/annual_loss_calibration.csv
 !data/raw/published_loss_benchmarks.csv
 !data/raw/loss_anchors.csv
+!data/raw/pt_hicp_annual.csv
 !data/raw/effis_fire_database_pt_2008_2026.csv
 !data/raw/effis_fire_database_pt_2008_2026.readme.txt
 

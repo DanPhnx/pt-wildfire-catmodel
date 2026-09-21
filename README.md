@@ -40,12 +40,16 @@ docs/              Phase implementation plan and worklog
   against the real per-fire data, not as a modeling input - two real
   discrepancies were found and documented rather than reconciled (see
   below).
-- **Loss calibration (EUR/ha)**: a three-point range, not a calibrated
-  constant - low ~487 (2024 forest-sector loss/ha, a floor), central ~1,923
-  (ICNF-derived long-run average via OECD/press), high ~2,593 (2017 EU
-  Solidarity Fund total direct damage / 2017 mainland burnt area). No
-  source publishes verified loss per individual fire. Evidence and
-  candidate anchors: `data/raw/loss_anchors.csv`.
+- **Loss calibration (EUR/ha)**: a three-point range in **2025 euros**,
+  not a calibrated constant - low ~497 (2024 forest-sector loss/ha, a
+  floor), central ~2,296 (ICNF-derived long-run average via OECD/press;
+  its price year is assumed, 2021, the smallest possible uplift), high
+  ~3,167 (2017 EU Solidarity Fund total direct damage / 2017 mainland
+  burnt area). Source figures are restated with Eurostat's Portuguese HICP
+  (`data/raw/pt_hicp_annual.csv`). No source publishes verified loss per
+  individual fire. The cleaned CSV has `Estimated_Loss_EUR` (each fire's
+  own-year euros) and `Estimated_Loss_EUR_2025`. Evidence and candidate
+  anchors: `data/raw/loss_anchors.csv`.
 - **Copernicus Emergency Management Service (EMS)** and **AGIF/APS
   reporting**: published burnt-area totals and component loss figures for
   2024 (forest-sector loss, insured claims), recorded with sources in
