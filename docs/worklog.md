@@ -381,6 +381,44 @@ year and one in 2025 euros.
   growth); the PRD's +/-5%/yr value-growth sensitivity is the place to test
   it.
 
+## Phase 1 close-out: threshold sensitivity and reproducibility scaffolding (Sept 2026)
+
+- **100 ha re-run (PRD Phase 1 technical decision), done in `01_eda.ipynb`.**
+  100 ha keeps 1,893 of 3,785 events (50%) and 94.7% of the 30 ha
+  threshold's total area. Overdispersion persists (39.1 vs 40.96); the
+  count-vs-median-size correlation weakens (rho 0.46, p = 0.061 vs 0.57,
+  p = 0.017) but the sample is smaller, so this doesn't read as the
+  dependence going away. Decision: keep 30 ha as the primary threshold - it
+  retains far more area and doesn't depend on ICNF's administrative
+  "major fire" line, which the model doesn't otherwise use.
+- **Reproducibility scaffolding.** `requirements.txt` pinned to exact
+  versions (was `>=`). Added `main.py`: runs each phase notebook in order
+  via `nbconvert`, detects a still-`NotImplementedError` phase and skips it
+  with a message instead of a confusing traceback (today: Phases 2-4).
+  README rewritten: installation, usage (`python main.py`), what's
+  scriptable (OWID/GWIS/HICP) vs a one-time manual export (EFFIS, already
+  committed so a fresh clone needs no re-request), and an honest
+  Phase 1 complete / Phases 2-4 not started status.
+- **Open conflict, not resolved: "fill Estimated_Loss_EUR only where a
+  sourced figure exists" (revised PRD, Phase 1 deliverable) vs the
+  per-fire schema.** No source publishes loss at the per-fire grain the
+  CSV schema uses (`Date | Location | Burned_Area_ha | Estimated_Loss_EUR`,
+  one row per fire) - only annual/event aggregates exist, and only one
+  (2017) is inside the model's mainland/2009-2025 window. Filling "only
+  where sourced" at that grain would leave the column almost entirely
+  empty, which is arguably more honest but breaks every downstream
+  consumer (Phase 2's severity fit, Phase 3's simulation) that expects a
+  populated per-fire loss. Current state (every event gets the
+  area x central-EUR/ha value) is unchanged pending a decision from Dan on
+  how to reconcile this.
+- **Checkpoint decisions still open (need Dan/Kit):** loss type - assumed
+  direct economic damage throughout, not yet explicitly confirmed; backtest
+  hold-out years - suggested 2021-2025 (5 years, includes both extreme
+  years 2017 falls outside the holdout and 2025 inside), not yet confirmed.
+- **Kit handover:** the write-up (`docs/phase1-writeup.md`) and README
+  together cover the Week 2 "cleaned data CSV + data summary" handover; no
+  separate document has been made. Flag if a standalone summary is wanted.
+
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't
