@@ -14,7 +14,8 @@ because notebook cell outputs are pinned in git and every stochastic step
 Usage
 -----
     python main.py            # run every implemented phase
-    python main.py --phase 1  # run one phase only (1-5)
+    python main.py --phase 1  # run one phase only (1-4; Phase 5 is the technical
+                               # write-up, not automated - see PHASES below)
 """
 
 import argparse
