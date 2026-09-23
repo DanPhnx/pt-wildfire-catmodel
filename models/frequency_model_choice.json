@@ -1,0 +1,9 @@
+{
+  "chosen": "negative_binomial",
+  "dispersion_test": {
+    "statistic": 79.9366515837104,
+    "df": 11,
+    "p_value": 1.517896919267514e-12,
+    "dispersion_ratio": 7.266968325791855
+  }
+}

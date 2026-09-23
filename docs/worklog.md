@@ -504,6 +504,72 @@ separate from the full write-up, covering what to sanity-check and what
 questions are still open for Kit's review, per the PRD's "Domain
 validation (Kit)" success criteria.
 
+## Phase 2 prep and first result: fire-day events, frequency model (Sept 2026)
+
+Started Phase 2. Before any fitting, checked something the write-up
+claimed but no code actually computed: "fire-day events" existed only as
+prose (numbers pasted from throwaway analysis scripts), not as a real,
+reusable transformation in the repo. Built it properly first.
+
+- **New `wildfire_model.py`** (repo root): shared logic used by more than
+  one phase notebook, per the PRD's "Entry point: one main.py; notebooks
+  for EDA only" - phase notebooks import from it rather than each
+  redefining the same logic. Contains `build_fire_day_events` (groups
+  per-polygon fires by calendar start date; reproduces the write-up's
+  numbers exactly: 1,283 events, 35.1% top-10-day area share, the
+  2017-10-15 cluster at 33 fires/196,476 ha) and `split_train_holdout`
+  plus the confirmed `TRAIN_YEARS = (2009, 2020)` /
+  `HOLDOUT_YEARS = (2021, 2025)` constants.
+- **`02_distribution_fitting.ipynb` rewritten** for the revised PRD (the
+  stub was written against the old PRD: single Poisson, K-S, R² > 0.95,
+  no fire-day concept). New goals section states the plan explicitly:
+  fire-day events, Poisson vs Negative Binomial, Lognormal+GPD severity,
+  Anderson-Darling with bootstrap p-values (not KS), train/hold-out
+  discipline.
+- **Frequency model, implemented and run, on training years only:**
+  - `overdispersion_test`: an index-of-dispersion chi-squared test.
+    On the 12 training years (2009-2020, fire-day counts): statistic
+    79.9, df 11, **p = 1.5e-12** - decisively rejects Poisson.
+  - `fit_poisson_frequency` (MLE = sample mean) and
+    `fit_negative_binomial_frequency` (method-of-moments starting point,
+    refined by MLE via `scipy.optimize.minimize`) both implemented and
+    compared: Poisson AIC 163.1, Negative Binomial AIC 114.3 - NB wins by
+    49 AIC points, consistent with the dispersion test.
+  - **Decision: Negative Binomial** for the frequency model. Saved to
+    `models/`: `poisson_frequency.json`, `negative_binomial_frequency.json`
+    (kept for comparison), `frequency_model_choice.json` (the decision and
+    the dispersion test). These are committed (small, human-readable, and
+    the actual reported result), unlike `data/processed/`, which stays
+    regenerable and gitignored.
+- **Not yet done (next):** severity (Lognormal body + GPD tail via a
+  mean-excess plot), Anderson-Darling with a parametric bootstrap p-value
+  for the tail fit (needed since KS/AD critical values assume known
+  parameters, not fitted ones), diagnostic plots, AIC/BIC writeup.
+  `fit_lognormal_severity`, `fit_pareto_tail`, `run_anderson_darling_test`
+  and `bootstrap_ad_pvalue` are defined with real docstrings but still
+  raise `NotImplementedError` - deliberately not called yet, so the
+  notebook runs cleanly end to end without them.
+
+## `main.py` bug found and fixed while testing the above
+
+`python main.py` reported Phase 2 as entirely "SKIPPED - not yet
+implemented" even after the frequency model above was written and
+verified working by running the notebook directly. Cause: `main.py`
+pre-scanned each notebook's source text for the literal string
+"NotImplementedError" and skipped the whole notebook if found anywhere -
+including inside `fit_lognormal_severity`, a stub function the notebook
+never actually calls yet. A real result sitting in an otherwise-unfinished
+notebook was invisible to the one command the PRD's reproducibility
+criterion names (`python main.py`).
+
+Fixed by removing the pre-scan: `main.py` now always attempts to execute
+every notebook and reports what actually happened (ran / failed /
+missing), rather than guessing from source text whether it's worth
+trying. A not-yet-started phase's "Run" section is commented out, so it
+still executes without error and is correctly reported as such - "ran
+without error" is not the same claim as "phase complete", and that
+distinction is now the README's Status section's job, not main.py's.
+
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't
@@ -511,5 +577,6 @@ validation (Kit)" success criteria.
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
 - No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" domain-validation test uses (Kit). Also look up published 2025 loss figures.
 - Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
-- Decide whether to integrate the ICNF PRDF (Zenodo) dataset for Phase 2 - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan).
-- Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it.
+- Decide whether to integrate the ICNF PRDF (Zenodo) dataset - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan). Not pursued for now (Phase 2 already under way on EFFIS).
+- Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it, if it's picked up later.
+- Phase 2: implement severity (Lognormal + GPD tail), goodness-of-fit (Anderson-Darling with bootstrap p-values), diagnostic plots (mean-excess plot, empirical vs. fitted CDF, QQ).
