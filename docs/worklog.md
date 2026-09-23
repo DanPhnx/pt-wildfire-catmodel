@@ -419,6 +419,91 @@ year and one in 2025 euros.
   together cover the Week 2 "cleaned data CSV + data summary" handover; no
   separate document has been made. Flag if a standalone summary is wanted.
 
+## ICNF check: answered, and it's bigger than expected (Sept 2026)
+
+Looked into what ICNF actually publishes (the item pending since the
+revised-PRD review). Short answer: a full per-fire national database,
+1980-2025, all fire sizes, not just annual totals.
+
+- **Found:** "Portuguese Rural Fire Database (PRDF), 1980-2025"
+  (zenodo.org/records/21427772, DOI 10.5281/zenodo.21427772), uploaded
+  22 July 2026, version V2025.1. First author Rui Lopes Almeida, listed as
+  a data manager at ICNF; co-authors from the Forest Research Centre
+  (TERRA) and INESC TEC/FEUP. It is a new version of the dataset behind a
+  peer-reviewed 2011 NHESS paper on the 1980-2005 Portuguese rural fire
+  database (a known, cited source in the wildfire literature), extended to
+  2025. Open access, CC-BY 4.0 (confirmed via the Zenodo API).
+- **What it has:** mainland Portugal, per-fire records (`fogos.gpkg`,
+  942.7 MB) with total burned area (`AREATOTAL`) and a burned-area class
+  (`CLASSEAREA`) per fire, alert/intervention/resolution timestamps,
+  cause, location down to parish, and per-fire physical/weather covariates
+  (slope, road density, FWI/DC/DMC/ISI/BUI indices, wind, temperature,
+  humidity, rate of spread). Also `PBA.gpkg` (251 MB, burned-area
+  perimeters, 1975-2025), `METEO.csv` (1.2 GB, hourly weather during
+  active fires), `FRP.csv` (32 MB, fire radiative power, 2004-2024).
+- **Why this matters:** it directly answers the PRD's open question
+  ("source that drives frequency: ICNF or EFFIS?") and would let the
+  record reach the PRD's target 1980 start, with every fire size (so
+  "large fire" becomes a modeling choice on `AREATOTAL`, not a side-effect
+  of which satellite product mapped a given year, as with the EFFIS
+  MODIS/Sentinel-2 split found earlier).
+- **Not integrated. Flagged for a decision, not done automatically:**
+  the main file is a 942.7 MB GeoPackage (a SQLite database with a
+  geometry column). Its attribute table is likely readable with the
+  standard library's `sqlite3` plus pandas, without geopandas, since only
+  `AREATOTAL`/dates/location are needed and the geometry blob can be
+  ignored - but this is unverified, the file is large to download, and
+  swapping or supplementing the primary frequency/severity source this
+  late in Phase 1 is a real scope decision, not a mechanical fix. Left for
+  Dan to decide whether to pursue for Phase 2, and if so, whether as a
+  replacement for EFFIS, a from-1980 frequency-only extension, or an
+  independent cross-check alongside it.
+
+## Loss-column conflict: resolved (Sept 2026)
+
+Resolved the tension flagged earlier between the revised PRD's "loss
+filled only where a sourced figure exists" and the per-fire CSV schema.
+
+- No source publishes loss at the per-fire grain the schema uses; only
+  annual/event aggregates exist, and only 2017 sits inside the
+  mainland/2009-2025 window (see `data/raw/loss_anchors.csv`). Filling
+  "only where sourced" at that grain would leave the column almost
+  entirely empty and break Phase 2 (severity fit) and Phase 3
+  (simulation), both of which need a populated per-fire loss.
+- **Resolution:** every row keeps its modeled value (area x central
+  EUR/ha, as before), and a new `Loss_Source` column labels every value
+  `"modeled (area x central EUR/ha)"`, so a modeled figure is never
+  presented as if it were observed. The PRD's actual intent - checking
+  modeled loss against sourced figures - is met at the annual level, which
+  is already where sourced figures exist (the 2017 official-total check
+  and the 2024 component-floor check, both in the notebook).
+
+## Phase 1 checkpoint decisions confirmed (Sept 2026)
+
+Per the revised PRD's open questions and Week 2 checklist ("event
+definition and loss type agreed"):
+
+- **Loss type: direct economic damage.** This was the working assumption
+  throughout Phase 1 and is now confirmed. Every anchor used (EUSF total,
+  AGIF forest-sector loss) measures this, not insured loss, which the PRD
+  itself notes is a small share of total damage (APS 2017 insured ~EUR
+  250m against a ~EUR 1,458m official total, ~17%).
+- **Event definition: mainland, >= 30 ha, applied uniformly.** Confirmed
+  (re-tested at 100 ha; see the Phase 1 close-out entry above).
+- **Backtest hold-out: 2021-2025 (5 years), train on 2009-2020 (12
+  years).** Confirmed. This keeps 2017 (the main severity-tail anchor) in
+  training, and the hold-out contains a mix of quiet years (2021, 2023) and
+  severe ones (2022, 2024, and 2025, the second-largest year in the
+  record), so it does not test only one kind of year.
+
+## Kit data-summary handover (Sept 2026)
+
+Per the revised PRD's Week 2 handover ("cleaned data CSV and data summary
+document"), wrote `docs/phase1-data-summary.md`: a short, Kit-facing note
+separate from the full write-up, covering what to sanity-check and what
+questions are still open for Kit's review, per the PRD's "Domain
+validation (Kit)" success criteria.
+
 ## Open items
 
 - Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't
@@ -426,4 +511,5 @@ year and one in 2025 euros.
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
 - No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" domain-validation test uses (Kit). Also look up published 2025 loss figures.
 - Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
-- ICNF: find out what it publishes (per-fire / size-class vs annual totals); the 1980 target depends on this.
+- Decide whether to integrate the ICNF PRDF (Zenodo) dataset for Phase 2 - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan).
+- Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it.

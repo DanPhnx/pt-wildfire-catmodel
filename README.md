@@ -49,7 +49,11 @@ docs/              Phase implementation plan and worklog
   burnt area). Source figures are restated with Eurostat's Portuguese HICP
   (`data/raw/pt_hicp_annual.csv`). No source publishes verified loss per
   individual fire. The cleaned CSV has `Estimated_Loss_EUR` (each fire's
-  own-year euros) and `Estimated_Loss_EUR_2025`. Evidence and candidate
+  own-year euros), `Estimated_Loss_EUR_2025`, and `Loss_Source` (always
+  `"modeled (area x central EUR/ha)"` - no source has per-fire loss in
+  this window, so every value is modeled and explicitly labelled as such,
+  rather than left blank per-fire or presented as observed; see "Data
+  gaps and assumptions" in `01_eda.ipynb`). Evidence and candidate
   anchors: `data/raw/loss_anchors.csv`.
 - **Copernicus Emergency Management Service (EMS)** and **AGIF/APS
   reporting**: published burnt-area totals and component loss figures for
