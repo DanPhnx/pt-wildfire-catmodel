@@ -79,8 +79,14 @@ Portuguese wildfire, 2009–2025, 30 ha or larger, 3,785 rows:
   point 4 above, now acted on. A formal dispersion test rejects a plain
   Poisson decisively; Negative Binomial is the chosen frequency model, on
   the confirmed 2009–2020 training years, saved to `models/`.
-- **Phase 2, severity: not yet done.** Lognormal body + Generalised Pareto
-  tail, goodness-of-fit, still to come.
+- **Phase 2, severity: done.** Lognormal body (mu=13.51, sigma=1.55) with a
+  Generalised Pareto tail above the 90th percentile (shape/xi=0.75, a heavy
+  tail - expected, not an error). Worth flagging for your review: the
+  Lognormal body is formally rejected by a goodness-of-fit test at 5%,
+  though the fitted-vs-empirical quantiles only drift meaningfully above
+  the 90th percentile, which is what the GPD tail exists to cover instead
+  - see `docs/worklog.md` if you want the full reasoning. **Phase 2 is now
+  complete.**
 - **Phases 3–4: not started.**
 - `data/processed/wildfires_processed.csv` isn't committed to git — it
   regenerates from `notebooks/01_eda.ipynb` (or `python main.py`).

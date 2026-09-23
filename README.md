@@ -109,12 +109,17 @@ comparison.
 
 1. **EDA** (implemented): load the real per-fire EFFIS database, cross-validate
    against independent aggregate sources, explore frequency and loss patterns
-2. **Distribution fitting** (frequency implemented; severity pending): events are
-   grouped into fire-day clusters (`wildfire_model.build_fire_day_events`), fitted
-   on the confirmed 2009-2020 training years only; a formal dispersion test
-   rejects Poisson decisively (p < 1e-11) and a Negative Binomial is chosen on
-   AIC. Still to do: Lognormal body with a Generalised Pareto tail for severity,
-   Anderson-Darling/QQ/AIC-BIC goodness-of-fit with bootstrap p-values
+2. **Distribution fitting** (done): events are grouped into fire-day clusters
+   (`wildfire_model.build_fire_day_events`), fitted on the confirmed 2009-2020
+   training years only. Frequency: a formal dispersion test rejects Poisson
+   decisively (p = 1.5e-12) and a Negative Binomial is chosen on AIC (114.3 vs
+   163.1). Severity: a Lognormal body (mu=13.51, sigma=1.55) with a Generalised
+   Pareto tail above the 90th percentile (shape/xi=0.75, a heavy tail with
+   infinite theoretical variance - expected for a catastrophe model). The
+   Lognormal body is formally rejected by Anderson-Darling at 5% (a large-n
+   effect - the empirical/fitted ratio stays within 0.85-1.09 through the 90th
+   percentile before the GPD tail takes over); the GPD tail itself is not
+   rejected (bootstrap Anderson-Darling p=0.19)
 3. **Monte Carlo simulation** (not yet implemented): 100,000-scenario aggregate
    loss simulation with a fixed seed; VaR(90/95/99), Expected Shortfall(95),
    1-in-10/25/100 return-period losses
@@ -169,19 +174,22 @@ fires of at least 30 ha, with loss in both the fire's own-year euros and
 2025 euros. The 30 ha vs 100 ha event-threshold sensitivity asked for in
 the PRD is run in the notebook; 30 ha is kept as the primary threshold.
 
-**Phase 2 (distribution fitting): frequency done, severity pending.**
-Events are re-grouped into fire-day clusters for modelling (see
-`wildfire_model.build_fire_day_events`); a Negative Binomial frequency
-model is fitted on the 2009-2020 training years and saved to `models/`.
-Severity (Lognormal + Generalised Pareto tail) and the goodness-of-fit
-tests are the next step - see the "Status" cell at the top of
-`notebooks/02_distribution_fitting.ipynb`.
+**Phase 2 (distribution fitting): complete.** Events are re-grouped into
+fire-day clusters for modelling (see `wildfire_model.build_fire_day_events`).
+Frequency: Negative Binomial, chosen over Poisson on a formal dispersion
+test and AIC. Severity: Lognormal body with a Generalised Pareto tail
+(threshold at the 90th percentile), with a bootstrap Anderson-Darling
+p-value for the tail since scipy has no built-in adjusted critical values
+for a GPD fitted on its own exceedances. The Lognormal body is formally
+rejected by Anderson-Darling (a large-sample-size effect, not hidden - see
+`notebooks/02_distribution_fitting.ipynb`'s "Parameter estimates summary");
+the GPD tail is not. All parameters saved to `models/`.
 
 **Phases 3-4: not started.** Notebook skeletons exist with stub functions
 (`NotImplementedError`, not yet called); see notebook headers for
-phase-by-phase task tracking and `docs/worklog.md` for what Phase 1 found
+phase-by-phase task tracking and `docs/worklog.md` for what Phase 1-2 found
 that should shape them (overdispersion, frequency-severity dependence,
-same-day fire clustering).
+same-day fire clustering, a heavy-tailed severity distribution).
 
 ## Contact
 

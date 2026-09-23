@@ -250,6 +250,63 @@ and for Copernicus EMS data, since the PRD lists both as Phase 1 tasks.
   published burnt-area totals were used. Per-fire EMS polygons would need
   geospatial tooling outside the PRD stack and are not needed for the model.
 
+## Phase 2 completed: severity fit (Lognormal + GPD tail) (Sept 2026)
+
+Implemented the second half of Phase 2, on the same 884 training-year
+(2009-2020) fire-day events used for frequency.
+
+- **Threshold, chosen from the mean-excess plot: the 90th percentile**
+  (EUR 5.82m). The plot is roughly linear from there on (mean excess rises
+  from ~EUR 22m at the 90th to ~EUR 43m at the 97th - a slope consistent
+  with a single GPD regime, not several), it lines up with the PRD's "no
+  systematic deviation in the top 10% of events" QQ criterion, and it
+  leaves 89 exceedances, enough for a stable 2-parameter fit.
+- **Lognormal body**: mu=13.51, sigma=1.547 (fitted MLE on the full
+  training sample, loc=0). AIC 27,164.4.
+- **GPD tail**: shape (xi) = 0.746, scale = 7,623,454. **xi > 0 means a
+  heavy tail with infinite theoretical variance** - the expected shape for
+  a catastrophe loss dominated by a handful of extreme years (2017, 2025),
+  not a red flag.
+- **Goodness of fit, both pieces, honestly reported:**
+  - Lognormal body: **rejected by Anderson-Darling at 5%** (statistic 7.15
+    vs critical value 0.75). Investigated rather than ignored: with n=884,
+    AD has a lot of power to flag even modest departures. The
+    fitted-vs-empirical quantile ratio stays within 0.85-1.09 through the
+    90th percentile before diverging sharply above it (1.47 at the 95th,
+    1.72 at the 99th) - exactly the region the GPD tail exists to cover
+    instead. Refitting on the sub-threshold body only (n=795) softens the
+    statistic (7.15 -> 4.53) but still doesn't clear the test. Documented
+    as a limitation: Lognormal is a workable body reference, not a
+    distribution this much data was ever going to pass a large-sample AD
+    test against.
+  - GPD tail: **not rejected.** A parametric bootstrap Anderson-Darling
+    p-value was implemented (`bootstrap_ad_pvalue`, `_anderson_darling_statistic`)
+    since scipy.stats.anderson has no support for genpareto and thus no
+    adjusted critical values for "parameters fitted on this same data" -
+    the bootstrap simulates that null distribution directly (1,000
+    replicates, seed 42). Result: statistic 0.562, **p = 0.192**. The part
+    of the model that matters most for VaR/ES is the part that passes.
+- Also fixed a real (if minor) issue while implementing this: scipy 1.17+
+  emits a FutureWarning on every `stats.anderson()` call unless a
+  `method=` is passed, and passing one changes the return shape (drops
+  `critical_values`/`significance_level`, which this code depends on).
+  Suppressed the warning explicitly with a comment pinning the reason to
+  `requirements.txt`'s `scipy==1.18.1`, rather than silently swallowing an
+  unexplained warning or restructuring around a hypothetical future
+  upgrade.
+- All parameters saved to `models/`: `lognormal_severity.json`,
+  `pareto_tail.json`, `severity_goodness_of_fit.json` (alongside the
+  frequency files from the previous session).
+- `python main.py` reruns all four phases clean; frequency numbers
+  unchanged from before this session's severity work.
+
+**Phase 2 is now complete.** Next: Phase 3 (Monte Carlo simulation), which
+per the notebook's own flagged staleness (see the earlier code-review fix)
+needs to sample from Negative Binomial (not Poisson) and should account for
+the residual frequency-severity dependence Phase 1 found (a plain
+independent frequency-then-severity draw understates annual-loss variance -
+see the "fire-day events" finding above).
+
 ## Decisions and corrections after the revised-PRD review (Sept 2026)
 
 Reviewed the proposed PRD revision against the data. Decisions made with
