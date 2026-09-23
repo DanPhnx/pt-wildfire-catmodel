@@ -385,26 +385,28 @@
 
   <section>
     <h2>Loss calibration</h2>
-    <p>No public source publishes verified EUR loss for an individual fire, and published totals for the same event differ widely with what they include (Pedr&oacute;g&atilde;o Grande 2017: a &euro;497m government estimate against ~&euro;200m of direct losses). So EUR/ha is carried as a <strong>three-point range, not a calibrated constant</strong>:</p>
+    <p>No public source publishes verified EUR loss for an individual fire, and published totals for the same event differ widely with what they include (Pedr&oacute;g&atilde;o Grande 2017: a &euro;497m government estimate against ~&euro;200m of direct losses). So EUR/ha is carried as a <strong>three-point range, not a calibrated constant</strong>, stated in <strong>2025 euros</strong> (the PRD's price basis). Each source figure is restated from the euros of its own year with Eurostat's Portuguese HICP (2015 = 100; uplift &times;1.022 from 2024, &times;1.194 from 2021, &times;1.221 from 2017):</p>
     <div class="table-wrap">
       <table>
         <caption>EUR/ha scenarios</caption>
         <thead>
-          <tr><th>Scenario</th><th class="num">EUR / ha</th><th>Basis</th></tr>
+          <tr><th>Scenario</th><th class="num">EUR / ha, 2025 prices</th><th class="num">Source figure</th><th>Basis</th></tr>
         </thead>
         <tbody>
-          <tr><td>Low</td><td class="num">487</td><td>2024 forest-sector loss (&euro;67m, AGIF) / 137,667 ha. A component of loss, so a floor</td></tr>
-          <tr><td>Central</td><td class="num">1,923</td><td>ICNF-derived 1975&ndash;2021 average (~&euro;10bn over ~5.2M ha), via OECD/press; 2017 is ~15% of its numerator</td></tr>
-          <tr><td>High</td><td class="num">2,593</td><td>2017 EU Solidarity Fund total direct damage (&euro;1,458m) / 562,348 ha mainland burnt area in this dataset</td></tr>
+          <tr><td>Low</td><td class="num">497</td><td class="num">487 (2024 euros)</td><td>2024 forest-sector loss (&euro;67m, AGIF) / 137,667 ha. A component of loss, so a floor</td></tr>
+          <tr><td>Central</td><td class="num">2,296</td><td class="num">1,923 (assumed 2021 euros)</td><td>ICNF-derived 1975&ndash;2021 average (~&euro;10bn over ~5.2M ha), via OECD/press; 2017 is ~15% of its numerator</td></tr>
+          <tr><td>High</td><td class="num">3,167</td><td class="num">2,593 (2017 euros)</td><td>2017 EU Solidarity Fund total direct damage (&euro;1,458m) / 562,348 ha mainland burnt area in this dataset</td></tr>
         </tbody>
       </table>
     </div>
-    <p>Only <strong>one official mainland total</strong> sits inside the data window (2017), so the range is an assumption bracketed by evidence, not a calibration. Candidate anchors not used, and why, are in <code>data/raw/loss_anchors.csv</code>: Madeira 2016 (&euro;157m over 5,409 ha is ~&euro;29,000/ha, about 11&times; the mainland 2017 figure, unverified, and out of scope), and 2003 (&gt;&euro;800m over ~425,000 ha, ~&euro;1,900/ha; a possible second anchor, but both figures need verifying). The 2017 total is derived by arithmetic (0.832% of GNI against a &euro;1,051.6m threshold at 0.6%) from figures seen in search results; the primary document was not opened. Ordinary years have no anchor and are likely below the catastrophic-year values.</p>
+    <p><strong>The central figure's price year is an assumption.</strong> It is a cumulative 1975&ndash;2021 total in mixed-year euros, so it cannot be restated exactly. It is treated as 2021 euros, the smallest possible uplift; its true 2025-euro value is likely higher, and it is the least certain of the three points.</p>
+    <p>The cleaned CSV carries three loss-related columns: <code>Estimated_Loss_EUR</code> in the euros of each fire's own year, <code>Estimated_Loss_EUR_2025</code> in 2025 euros, and <code>Loss_Source</code>, always <code>"modeled (area x central EUR/ha)"</code>. No source publishes loss at the per-fire grain the schema uses, so every value is modeled, not observed - <code>Loss_Source</code> says so explicitly rather than leaving that ambiguous or leaving the column mostly empty (the revised PRD's "filled only where sourced" as first drafted would do the latter). This assumes real EUR/ha is constant over time (no exposure or value growth; the PRD's value-growth sensitivity covers that), and HICP is a general consumer index, not a construction-cost index, so reconstruction-cost inflation may differ.</p>
+    <p>Only <strong>one official mainland total</strong> sits inside the data window (2017), so the range is an assumption bracketed by evidence, not a calibration. Candidate anchors not used, and why, are in <code>data/raw/loss_anchors.csv</code>: Madeira 2016 (&euro;157m over 5,409 ha is ~&euro;36,000/ha in 2025 prices, about 11&times; the high scenario, unverified, and out of scope), and 2003 (&gt;&euro;800m over ~425,000 ha, ~&euro;2,900/ha in 2025 prices; a possible second catastrophic-year anchor between the central and high scenarios, but both figures need verifying). The central scenario sits below both catastrophic anchors, as expected if ordinary years cost less per hectare; ordinary years have no anchor of their own. The 2017 total is derived by arithmetic (0.832% of GNI against a &euro;1,051.6m threshold at 0.6%) from figures seen in search results; the primary document was not opened.</p>
     <p>Three things follow, and none is hidden:</p>
     <ul class="findings">
       <li><strong>Modeled loss is burnt area times a constant</strong> per scenario. The loss distribution has exactly the shape of the area distribution, and VaR/ES in euros are the area VaR/ES rescaled. It is best read as a burnt-area model with a euro scale.</li>
-      <li><strong>The 2017 check is only partly independent.</strong> The central scenario gives &euro;1,081m, 74% of the official &euro;1,458m. The central figure isn't calibrated to 2017, but 2017 is part of its numerator; the high scenario matches by construction.</li>
-      <li><strong>2024 can be bracketed, not validated.</strong> Mainland burnt area agrees with AGIF (137,564 ha vs 137,667 ha, 99.9%). For loss, the only published euro figures are components: forest-sector loss of &euro;67m and provisional insured claims above &euro;17m, together ~&euro;84m, against a central-scenario total of ~&euro;265m. No published total economic loss for 2023 or 2024 was found. For 2025 (provisional, 278,917 ha) the range is &euro;136m / &euro;536m / &euro;723m across the low / central / high scenarios; no published 2025 loss figure has been looked up yet.</li>
+      <li><strong>The 2017 check is only partly independent.</strong> In 2017 euros the central scenario gives &euro;1,057m, 72% of the official &euro;1,458m. The central figure isn't calibrated to 2017, but 2017 is part of its numerator and its price year is assumed; the high scenario matches by construction.</li>
+      <li><strong>2024 can be bracketed, not validated.</strong> Mainland burnt area agrees with AGIF (137,564 ha vs 137,667 ha, 99.9%). For loss, the only published euro figures are components: forest-sector loss of &euro;67m and provisional insured claims above &euro;17m, together ~&euro;84m, against a central-scenario total of ~&euro;309m in 2024 euros. No published total economic loss for 2023 or 2024 was found. For 2025 (provisional, 278,917 ha) the range is &euro;139m / &euro;640m / &euro;883m in 2025 euros across the low / central / high scenarios; no published 2025 loss figure has been looked up yet.</li>
     </ul>
     <p>The benchmarks and their sources are in <code>data/raw/published_loss_benchmarks.csv</code>. The PRD's "within published range" criterion needs a defined benchmark before Phase 4.</p>
   </section>
@@ -415,6 +417,7 @@
       <li>Mainland Portugal only; frequency and severity cover fires of at least 30 ha, applied uniformly to all years, a deliberate scope choice, not a hidden gap.</li>
       <li>The record is 2009&ndash;2025 (17 years); the EFFIS export holds nothing before 2008, so the longer record the revised PRD targets is not available from EFFIS. 2025 is provisional.</li>
       <li>Loss is derived from a EUR/ha range with a single official mainland anchor (2017), not observed per-fire, so the euro loss distribution is the burnt-area distribution rescaled.</li>
+      <li>Euros are restated with a general consumer price index (HICP) and real EUR/ha is assumed constant over time; the central scenario's price year is assumed (2021), so it is likely understated in 2025 euros.</li>
       <li>No published total economic loss was found for 2023 or 2024, so the loss level is bracketed by component figures rather than validated.</li>
       <li>A ~6.5% area overshoot versus GWIS in 2020&ndash;2025 remains unexplained (101.2% in 2009&ndash;2019).</li>
       <li>Annual counts are strongly overdispersed (variance/mean ~41), and count, fire size and same-day clustering are dependent, so a plain independent Poisson&ndash;lognormal model is unlikely to fit or to reproduce a 2017-sized year.</li>
@@ -424,7 +427,7 @@
 
   <section>
     <h2>Next</h2>
-    <p>Phase 2 fits the actual distributions (Poisson and Negative Binomial frequency, Lognormal/Pareto severity, with Kolmogorov&ndash;Smirnov and Anderson&ndash;Darling goodness-of-fit) against this real dataset.</p>
+    <p>Phase 2 fits the actual distributions against this real dataset: Poisson vs Negative Binomial frequency, Lognormal body with a Generalised Pareto tail for severity, with Anderson&ndash;Darling goodness-of-fit (not Kolmogorov&ndash;Smirnov, whose p-values are invalid once parameters are fitted on the same data). <strong>Update:</strong> the frequency half is done &ndash; see <code>docs/worklog.md</code> &ndash; Negative Binomial was chosen over Poisson on a formal dispersion test and AIC.</p>
   </section>
 
   <footer class="doc-foot">

@@ -1,4 +1,4 @@
-label,eur_per_ha,source
-low,486.68163031082247,"2024 forest-sector loss (AGIF) / 2024 national burnt area; a floor, not a total"
-central,1923.076923076923,"ICNF cumulative 1975-2021 burnt area & losses, via OECD/press reporting"
-high,2593.056256979664,2017 EU Solidarity Fund total direct damage / 2017 mainland burnt area in this dataset
+label,eur_per_ha,eur_per_ha_source_prices,price_year,source
+low,497.35954082439594,486.68163031082247,2024,"2024 forest-sector loss (AGIF) / 2024 national burnt area; a floor, not a total"
+central,2296.104182761285,1923.076923076923,2021,"ICNF cumulative 1975-2021 burnt area & losses, via OECD/press reporting; price year ASSUMED (minimum uplift)"
+high,3167.2329995965893,2593.056256979664,2017,2017 EU Solidarity Fund total direct damage / 2017 mainland burnt area in this dataset
