@@ -25,7 +25,8 @@ because notebook cell outputs are pinned in git and every stochastic step
 Usage
 -----
     python main.py            # run every phase notebook, in order
-    python main.py --phase 1  # run one phase only (1-5)
+    python main.py --phase 1  # run one phase only (1-4; Phase 5 is the technical
+                               # write-up, not automated - see PHASES below)
 """
 
 import argparse
@@ -61,7 +62,7 @@ def run_notebook(notebook_path: Path) -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--phase", type=int, choices=[p for p, _, _ in PHASES], help="run a single phase (1-5)")
+    parser.add_argument("--phase", type=int, choices=[p for p, _, _ in PHASES], help="run a single phase (1-4)")
     args = parser.parse_args()
 
     phases = [p for p in PHASES if p[0] == args.phase] if args.phase else PHASES

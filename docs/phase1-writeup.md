@@ -119,7 +119,7 @@ The benchmarks and their sources are in `data/raw/published_loss_benchmarks.csv`
 
 ## Next
 
-Phase 2 fits the actual distributions (Poisson and Negative Binomial frequency, Lognormal/Pareto severity, with Kolmogorov-Smirnov and Anderson-Darling goodness-of-fit) against this real dataset.
+Phase 2 fits the actual distributions against this real dataset: Poisson vs Negative Binomial frequency, Lognormal body with a Generalised Pareto tail for severity, with Anderson-Darling goodness-of-fit (not Kolmogorov-Smirnov, whose p-values are invalid once parameters are fitted on the same data). **Update:** the frequency half is done - see `docs/worklog.md` - Negative Binomial was chosen over Poisson on a formal dispersion test and AIC.
 
 ---
 
