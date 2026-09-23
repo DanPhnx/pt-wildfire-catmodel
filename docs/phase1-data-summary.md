@@ -68,12 +68,19 @@ Portuguese wildfire, 2009–2025, 30 ha or larger, 3,785 rows:
    manager) publishes a full per-fire national database, 1980–2025, all
    fire sizes, on Zenodo (`10.5281/zenodo.21427772`, CC-BY). It would let
    the record reach the PRD's 1980 target properly. It's a ~940 MB file,
-   so pulling it in is a real decision, not a quick add — noted in
-   `docs/worklog.md` for Dan to decide on before Phase 2.
+   so pulling it in is a real decision, not a quick add. Not pursued for
+   now — Phase 2 is already under way on EFFIS — but noted in
+   `docs/worklog.md` if it's worth revisiting later.
 
-## Not yet done (so you're not blindsided by gaps)
+## Where things stand (updated after this note was first written)
 
-- Distribution fitting, simulation and validation (Phases 2–4) haven't
-  started; the notebooks are stubs.
+- **Phase 2, frequency: done.** Events are re-grouped into "fire-day"
+  clusters (same start date) rather than modeled per raw polygon — see
+  point 4 above, now acted on. A formal dispersion test rejects a plain
+  Poisson decisively; Negative Binomial is the chosen frequency model, on
+  the confirmed 2009–2020 training years, saved to `models/`.
+- **Phase 2, severity: not yet done.** Lognormal body + Generalised Pareto
+  tail, goodness-of-fit, still to come.
+- **Phases 3–4: not started.**
 - `data/processed/wildfires_processed.csv` isn't committed to git — it
   regenerates from `notebooks/01_eda.ipynb` (or `python main.py`).
