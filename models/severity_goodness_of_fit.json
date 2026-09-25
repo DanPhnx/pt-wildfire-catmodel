@@ -1,0 +1,35 @@
+{
+  "anderson_darling_lognormal": {
+    "statistic": 7.151304388623203,
+    "critical_values": [
+      0.561,
+      0.63,
+      0.751,
+      0.872,
+      1.034
+    ],
+    "significance_levels": [
+      15.0,
+      10.0,
+      5.0,
+      2.5,
+      1.0
+    ],
+    "reject_at_5pct": true
+  },
+  "bootstrap_ad_gpd_tail": {
+    "statistic": 0.5616497321827296,
+    "p_value": 0.192,
+    "n_boot": 1000
+  },
+  "qq_systematic_deviation_lognormal_body": {
+    "rho": -0.005139698944806837,
+    "p_value": 0.8787144983481199,
+    "systematic": false
+  },
+  "qq_systematic_deviation_gpd_tail_top10pct": {
+    "rho": 0.07340823970037454,
+    "p_value": 0.49418662447522543,
+    "systematic": false
+  }
+}
