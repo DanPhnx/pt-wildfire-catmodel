@@ -1,6 +1,6 @@
 {
   "anderson_darling_lognormal": {
-    "statistic": 7.151304388623203,
+    "statistic": 7.151304388623089,
     "critical_values": [
       0.561,
       0.63,
@@ -18,7 +18,7 @@
     "reject_at_5pct": true
   },
   "bootstrap_ad_gpd_tail": {
-    "statistic": 0.5616497321827296,
+    "statistic": 0.5616497192344241,
     "p_value": 0.192,
     "n_boot": 1000
   },

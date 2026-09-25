@@ -627,13 +627,53 @@ still executes without error and is correctly reported as such - "ran
 without error" is not the same claim as "phase complete", and that
 distinction is now the README's Status section's job, not main.py's.
 
+## Severity refit: burned area, not euro loss, per the PRD (Sept 2026)
+
+The "Phase 2 completed: severity fit" entry above fitted the Lognormal
+body and GPD tail directly on `Estimated_Loss_EUR_2025` (2025 euros).
+Asked directly "which does the updated PRD request?" and checked the
+actual text: the PRD's Technical Decisions table says plainly **"the
+model fits burned area, not euro losses, and converts to euros at the
+end,"** and the Phase 2 checklist says "fit a lognormal body and
+generalised Pareto tail to burned area." The EUR-basis fit didn't match
+either sentence, even though it's mathematically equivalent for a fixed
+EUR/ha (loss = area x constant, so sigma and xi - the dimensionless shape
+parameters - are unaffected by which basis you fit on; only
+mu/threshold/scale shift by the constant). Verified that equivalence
+numerically before refitting (matched to 6 decimal places), then redid
+the fit on `Burned_Area_ha` to match the PRD's literal architecture:
+
+- Lognormal body: mu=5.768 (log-ha), sigma=1.547 (unchanged, as expected).
+  GPD tail: threshold 2,534 ha, shape (xi)=0.746 (unchanged), scale
+  3,320.2 ha.
+- All goodness-of-fit statistics (Anderson-Darling, the bootstrap AD
+  p-value, the QQ rank-deviation test) are numerically identical to the
+  EUR-basis run, since AD/QQ-rank tests are invariant to a fixed linear
+  rescaling of the data - confirmed, not just assumed.
+- Added an explicit "converts to euros at the end" step: a deterministic
+  conversion of the fitted ha-parameters under each of the low/central/
+  high EUR/ha scenarios (from `data/raw/annual_loss_calibration.csv`),
+  saved to `models/severity_euro_equivalents.json`. The central scenario's
+  converted threshold (EUR 5.82m) and scale (EUR 7,623,453) match the
+  retired EUR-basis fit's numbers exactly, confirming the refit is the
+  same statistical result in the PRD's intended units, not a different
+  finding.
+- `RAW_DIR` had to be added to `02_distribution_fitting.ipynb`'s imports
+  cell (it only had `PROCESSED_DIR`/`MODELS_DIR` before) to read the
+  calibration file for this conversion step.
+
+Lesson: "mathematically equivalent" is not the same as "what was asked
+for" - a PRD that separates fitting and unit conversion into two named
+steps should be implemented as two steps, even when collapsing them
+would give identical numbers after rescaling. The retired EUR-basis
+entry above is left as-is (a record of what was tried), not rewritten.
+
 ## Open items
 
-- Phases 2-4 (distribution fitting, Monte Carlo, validation) haven't
-  started yet.
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
-- No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" domain-validation test uses (Kit). Also look up published 2025 loss figures.
+- No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" / "within published range" domain-validation test uses (Kit). Also look up published 2025 loss figures.
 - Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
-- Decide whether to integrate the ICNF PRDF (Zenodo) dataset - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan). Not pursued for now (Phase 2 already under way on EFFIS).
+- Decide whether to integrate the ICNF PRDF (Zenodo) dataset - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan). Not pursued for now.
 - Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it, if it's picked up later.
-- Phase 2: implement severity (Lognormal + GPD tail), goodness-of-fit (Anderson-Darling with bootstrap p-values), diagnostic plots (mean-excess plot, empirical vs. fitted CDF, QQ).
+- Phase 3 (Monte Carlo simulation): needs to sample from Negative Binomial (not Poisson - already flagged as stale in the notebook stub) and account for the residual frequency-severity dependence Phase 1 found (annual burnt-area SD is still ~1.8x an independent model's, even at fire-day granularity).
+- Phase 4 (validation and sensitivity): notebook stub still reflects the original PRD in several places ("final 5 calendar years" as a plain count rather than the confirmed 2021-2025 window, "2023-level" bad years, "within ~20%", Poisson-only sensitivity params) - flagged in the notebook itself, not yet fixed.

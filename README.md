@@ -112,14 +112,20 @@ comparison.
 2. **Distribution fitting** (done): events are grouped into fire-day clusters
    (`wildfire_model.build_fire_day_events`), fitted on the confirmed 2009-2020
    training years only. Frequency: a formal dispersion test rejects Poisson
-   decisively (p = 1.5e-12) and a Negative Binomial is chosen on AIC (114.3 vs
-   163.1). Severity: a Lognormal body (mu=13.51, sigma=1.55) with a Generalised
-   Pareto tail above the 90th percentile (shape/xi=0.75, a heavy tail with
-   infinite theoretical variance - expected for a catastrophe model). The
-   Lognormal body is formally rejected by Anderson-Darling at 5% (a large-n
-   effect - the empirical/fitted ratio stays within 0.85-1.09 through the 90th
-   percentile before the GPD tail takes over); the GPD tail itself is not
-   rejected (bootstrap Anderson-Darling p=0.19)
+   decisively (p = 1.5e-12) and a Negative Binomial is chosen on AIC/BIC (114.3
+   vs 163.1). Severity is fitted on **burned area (hectares)**, per the PRD's
+   Technical Decisions ("the model fits burned area, not euro losses, and
+   converts to euros at the end"): a Lognormal body (mu=5.77 log-ha, sigma=1.55)
+   with a Generalised Pareto tail above the 90th percentile (2,534 ha; shape/
+   xi=0.75, a heavy tail with infinite theoretical variance - expected for a
+   catastrophe model). Euro figures are a deterministic conversion applied
+   afterward under the low/central/high EUR/ha scenarios, not baked into the
+   fit. The Lognormal body is formally rejected by Anderson-Darling at 5% (a
+   real, extreme-tail-concentrated miss, not just AD's large-n power - see the
+   notebook); the GPD tail itself is not rejected (bootstrap Anderson-Darling
+   p=0.19), and the PRD's "top 10% of events show no systematic deviation on
+   the QQ plot" criterion passes for it. Bootstrap 95% CIs reported for every
+   parameter.
 3. **Monte Carlo simulation** (not yet implemented): 100,000-scenario aggregate
    loss simulation with a fixed seed; VaR(90/95/99), Expected Shortfall(95),
    1-in-10/25/100 return-period losses
@@ -177,13 +183,19 @@ the PRD is run in the notebook; 30 ha is kept as the primary threshold.
 **Phase 2 (distribution fitting): complete.** Events are re-grouped into
 fire-day clusters for modelling (see `wildfire_model.build_fire_day_events`).
 Frequency: Negative Binomial, chosen over Poisson on a formal dispersion
-test and AIC. Severity: Lognormal body with a Generalised Pareto tail
-(threshold at the 90th percentile), with a bootstrap Anderson-Darling
-p-value for the tail since scipy has no built-in adjusted critical values
-for a GPD fitted on its own exceedances. The Lognormal body is formally
-rejected by Anderson-Darling (a large-sample-size effect, not hidden - see
-`notebooks/02_distribution_fitting.ipynb`'s "Parameter estimates summary");
-the GPD tail is not. All parameters saved to `models/`.
+test, AIC and BIC. Severity: Lognormal body with a Generalised Pareto tail
+(threshold at the 90th percentile), fitted on burned area per the PRD (not
+on euro loss), with euro-equivalent parameters under the low/central/high
+EUR/ha scenarios reported as a final conversion step
+(`models/severity_euro_equivalents.json`). A bootstrap Anderson-Darling
+p-value covers the tail, since scipy has no built-in adjusted critical
+values for a GPD fitted on its own exceedances; the PRD's "top 10% of
+events" QQ criterion is checked explicitly and passes. The Lognormal body
+is formally rejected by Anderson-Darling (a real, extreme-tail-concentrated
+miss, not hidden - see `notebooks/02_distribution_fitting.ipynb`'s
+"Parameter estimates summary"); the GPD tail is not. Bootstrap 95%
+confidence intervals reported for every parameter. All parameters and
+diagnostic plots (PDF, the PRD's named format) saved to `models/`.
 
 **Phases 3-4: not started.** Notebook skeletons exist with stub functions
 (`NotImplementedError`, not yet called); see notebook headers for
