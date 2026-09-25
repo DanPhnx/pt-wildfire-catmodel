@@ -748,6 +748,81 @@ is already in euros.
 
 `python main.py` reruns all four phases clean after every change above.
 
+## Phase 3 planning: frequency-severity dependence and a tail-stability problem found first (Sept 2026)
+
+Before starting Phase 3 implementation, built a numerical proof-of-concept
+for the open item above (year-level frailty factor, Option A) rather than
+writing the plan on the "~1.8x" figure alone. That figure turned out to be
+comparing history to the wrong baseline (a bootstrap resample of the actual
+historical arrays, which can never exceed what's already been observed) -
+comparing history to the *fitted parametric model* run independently
+instead surfaced a bigger, unrelated problem: the fitted GPD tail (xi=0.746,
+from `models/pareto_tail.json`) has infinite theoretical variance (finite
+only for xi<0.5), so an uncapped simulation doesn't converge at all -
+annual-loss SD ranged 400,000-1,064,000 ha across 8 seeds of the same
+independent model, driven by rare draws so large they're not physically
+possible (one hit 75.7 million ha, over 8x mainland Portugal's land area).
+
+Fix (verified numerically, not yet implemented in `monte_carlo.py`): cap
+each simulated fire-day severity at 5x the historical maximum fire-day
+(982,380 ha) as the working bound - stabilizes cross-seed SD to within
+~2.6% - with ICNF's IFN6 (6th National Forest Inventory, 2015 survey data,
+published June 2019) figure for mainland forest+shrubland+unproductive
+land, 6.1 million ha, hard-coded as an absolute physical backstop. With the
+cap in place, the independent model understates the true observed annual SD
+(147,411 ha, 2009-2020) by a real but modest ~7% (SD ~137,000 ha), not the
+~1.8x first estimated. A year-level lognormal frailty factor (mean 1,
+sigma_z), Gaussian-copula-linked to the annual count draw (correlation
+rho), closes this: sigma_z=0.25 at rho=0 reproduces the observed SD almost
+exactly (ratio 1.003x) but not Phase 1's count/severity rank correlation
+(rho_Spearman=0.57); a first joint grid search over sigma_z and rho shows
+both targets are reachable together but pull against each other, so final
+joint calibration (plus a hold-out check) is left to implementation.
+
+Full writeup, proposed PRD Technical Decisions addendum, and the exact
+numbers: `docs/phase3-frequency-severity-dependence.md`.
+
+## Phase 3 module set up: `monte_carlo.py` (Sept 2026)
+
+Extracted the simulation engine designed above into `monte_carlo.py` up
+front, matching `distribution_fitting.py`'s pattern for Phase 2 (per the
+PRD's "notebooks for EDA only") rather than writing it inline in the
+notebook and refactoring later - the remaining item from the Phase 2
+open-items note.
+
+Implements, with real logic (not stubs): `load_model_params`;
+`historical_severity_cap` (derives the practical severity cap from the
+actual training data's max, at `DEFAULT_CAP_MULTIPLIER`=5x, rather than
+hardcoding 982,380 - so it can't go stale if the data record is extended);
+`simulate_dependent_frequency_and_frailty` (the Gaussian-copula frequency/
+frailty joint draw); `simulate_severities` (Lognormal body + capped GPD
+tail); `run_monte_carlo` (ties it together, converts to euros as the final
+step, defaults to no frailty so it also serves as the independent baseline);
+`compute_risk_metrics` (VaR 90/95/99, ES(95), the aggregate 1-in-10/25/100
+return-period losses - which are just VaR at 1-1/N and included directly;
+occurrence-level return periods need per-event severities retained, not
+just annual sums, so are flagged as follow-up, not implemented here);
+`convergence_check` (splits one large run into sub-samples to estimate
+VaR(95%)/VaR(99%) standard error, per the PRD's "< 2%" success criterion);
+and the three diagnostic plots plus `save_simulation_results`.
+
+Smoke-tested end to end (`n_scenarios=20,000`, sigma_z=0.25): reproduces
+the ~147k ha calibration target (150,423 ha at this sample size), plausible
+VaR/ES/skewness/kurtosis, and a convergence check giving VaR_95 SE=2.56% at
+n=20,000/10 splits (expected to clear the PRD's 2% bar at the full 100,000-
+scenario run, since SE scales as ~1/sqrt(n) and this run used a fifth of
+the target sample).
+
+Rebuilt `03_monte_carlo.ipynb` to import from the module (mirroring
+`02_distribution_fitting.ipynb`) rather than defining the simulation
+functions itself: loads Phase 2's fitted parameters plus the training data
+needed to derive `tail_probability` and the severity cap, then leaves the
+actual production run commented out, since `sigma_z`/`rho` are still the
+planning-stage prototype's illustrative values, not a joint-calibrated,
+hold-out-checked final answer. `python main.py` runs all four phases clean.
+README's project structure, status, and methodology sections updated to
+match (previously said Phase 3 "not yet implemented").
+
 ## Open items
 
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
@@ -755,5 +830,5 @@ is already in euros.
 - Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
 - Decide whether to integrate the ICNF PRDF (Zenodo) dataset - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan). Not pursued for now.
 - Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it, if it's picked up later.
-- Phase 3 (Monte Carlo simulation): needs to sample from Negative Binomial (not Poisson - already flagged as stale in the notebook stub), simulate severity in hectares and apply a EUR/ha scenario as an explicit final step (not treat lognormal_severity.json/pareto_tail.json as already euros - flagged in the notebook stub), and account for the residual frequency-severity dependence Phase 1 found (annual burnt-area SD is still ~1.8x an independent model's, even at fire-day granularity). Should also decide whether to extract its own logic into a module (e.g. monte_carlo.py) up front, matching distribution_fitting.py, rather than writing it inline and refactoring later.
+- Phase 3 (Monte Carlo simulation): the engine now lives in `monte_carlo.py` (Negative Binomial frequency, hectare-based Lognormal/GPD severity with the tail cap, the year-level frailty factor, risk metrics, convergence check - see the two entries above), smoke-tested but not yet run for real. Still to do: joint-calibrate `sigma_z`/`rho` against both the observed annual SD and the observed count-severity correlation (a first grid search found the two pull against each other - see `docs/phase3-frequency-severity-dependence.md`); check the calibration against the 2021-2025 hold-out; decide the final EUR/ha scenario(s) to report under; run the actual 100,000-scenario simulation with the calibrated parameters; confirm the convergence check clears the PRD's <2% bar at that sample size; add the euro-loss results CSV and diagnostic plots the PRD's deliverable asks for; and design occurrence-level (not just aggregate) return-period losses, which need per-event severities retained through the simulation, not just annual sums (`compute_risk_metrics` doesn't do this yet - flagged in its docstring).
 - Phase 4 (validation and sensitivity): notebook stub still reflects the original PRD in several places ("final 5 calendar years" as a plain count rather than the confirmed 2021-2025 window, "2023-level" bad years, "within ~20%", Poisson-only sensitivity params) - flagged in the notebook itself, not yet fixed.
