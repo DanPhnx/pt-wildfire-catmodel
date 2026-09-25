@@ -668,6 +668,86 @@ steps should be implemented as two steps, even when collapsing them
 would give identical numbers after rescaling. The retired EUR-basis
 entry above is left as-is (a record of what was tried), not rewritten.
 
+## Deleted the superseded original PRD; extracted Phase 2 logic to a module (Sept 2026)
+
+Two things, prompted by directly checking "is this the updated or old
+PRD?" against the actual PDF text (grep, not memory) while auditing PR #4
+against the PRD.
+
+- **Deleted `cat_loss_model_prd.pdf`** (the pre-revision PRD). Confirmed
+  untracked in git and referenced nowhere in the repo before deleting.
+  Only `Parametric Catastrophe Loss Model - Portugal Wildfires (PRD,
+  proposed revision).pdf` remains; it is the one every requirement in this
+  worklog since the "Phase 1 close-out" entry has actually been checked
+  against.
+- **Extracted Phase 2's logic to `distribution_fitting.py`.** The PRD's
+  Technical Decisions table says "Entry point: one main.py; notebooks for
+  EDA only." Checked how literally this was honoured: 16 functions (every
+  frequency/severity fit, every goodness-of-fit test, the bootstrap CI
+  machinery, all diagnostic plotting) were defined directly in
+  `02_distribution_fitting.ipynb`'s cells, versus only 2 in the shared
+  `wildfire_model.py`. Asked the user how far to take the fix (also make
+  `main.py` call the module directly, bypassing notebook execution
+  entirely, versus extract-only and keep `main.py` running notebooks via
+  `nbconvert`); chose the smaller, lower-risk option.
+  - Moved all 16 functions verbatim into `distribution_fitting.py`
+    (matching `wildfire_model.py`'s existing import pattern), keeping
+    `RAW_DIR`/`PROCESSED_DIR`/`MODELS_DIR` as relative-path constants
+    there rather than notebook globals, since Python resolves them
+    against the process's cwd (the notebook's own directory under
+    `nbconvert`) regardless of which file defines them - verified this
+    with a standalone smoke test importing the module before touching
+    the notebook.
+  - The notebook now imports everything and keeps only the "Run" cells
+    and markdown; it no longer defines the modelling logic itself.
+  - Fixed a real bug caught by the smoke test in the same pass:
+    `fit_gpd_raw`'s docstring claimed it worked with both
+    `bootstrap_parameter_ci` (dict-returning `fit_func`) and
+    `bootstrap_ad_pvalue` (tuple-returning `fit_func`) - it only satisfies
+    the former; the docstring was wrong, not the code (nothing in the
+    notebook actually called it the wrong way, but the next person to use
+    it from the docstring would have).
+  - Also fixed a real, if minor, latent bug while extracting
+    `plot_mean_excess`: its axis labels were hardcoded "(EUR)" even after
+    severity was refit on hectares - the notebook worked around it with a
+    label override afterward. Now takes `xlabel`/`ylabel` parameters with
+    unit-free defaults.
+
+**Also fixed three findings from the PR #4 code review that arrived
+during this same pass** (background review, high effort):
+- `bootstrap_ad_pvalue`'s per-replicate refit had no try/except, unlike
+  its sibling `bootstrap_parameter_ci`, which explicitly skips a resample
+  `fit_func` fails on. A future call with a fit_func that can raise (e.g.
+  the Negative Binomial) would have crashed the whole bootstrap on one
+  bad replicate instead of degrading gracefully. Fixed to match.
+- `bootstrap_parameter_ci` would call `np.percentile` on an empty array
+  with an unhelpful low-level error if every resample failed. Now raises
+  a clear "all resamples failed" message instead.
+- Several statistics quoted in the notebook's summary and this worklog
+  (the 0.85-1.09/1.47/1.72 quantile ratios, the sub-threshold-refit AD
+  statistic of 4.53, the 26% residual-mass figure) were hand-transcribed
+  from an ad hoc standalone investigation, not computed by any executed
+  cell - meaning `python main.py` could not actually reproduce the PR's
+  own claimed numbers, contradicting its stated goal. Added a
+  "Reproducibility check" block to the severity Run cell that computes
+  all of them directly (verified: reproduces 0.85, 0.86, 0.99, 1.09, 1.47,
+  1.72, 4.53 and 26.5% exactly) and saves them to
+  `severity_goodness_of_fit.json`.
+- (A fifth finding - `plot_qq_fit` and `check_qq_systematic_deviation`
+  independently recomputing the same theoretical/empirical quantiles -
+  fixed too: both now call a shared `_qq_theoretical_and_empirical` helper
+  in `distribution_fitting.py`, so they cannot silently drift apart.)
+
+Also fixed `03_monte_carlo.ipynb`'s stub, which the review flagged as
+still documenting `severity_params`/`simulate_severities`'s output as
+euros - stale since the burned-area refit moved euros into a separate
+`severity_euro_equivalents.json`. Updated the docstrings and the
+commented usage example to load the hectare-based files plus the
+EUR/ha scenario explicitly, rather than implying the saved severity JSON
+is already in euros.
+
+`python main.py` reruns all four phases clean after every change above.
+
 ## Open items
 
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
@@ -675,5 +755,5 @@ entry above is left as-is (a record of what was tried), not rewritten.
 - Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
 - Decide whether to integrate the ICNF PRDF (Zenodo) dataset - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan). Not pursued for now.
 - Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it, if it's picked up later.
-- Phase 3 (Monte Carlo simulation): needs to sample from Negative Binomial (not Poisson - already flagged as stale in the notebook stub) and account for the residual frequency-severity dependence Phase 1 found (annual burnt-area SD is still ~1.8x an independent model's, even at fire-day granularity).
+- Phase 3 (Monte Carlo simulation): needs to sample from Negative Binomial (not Poisson - already flagged as stale in the notebook stub), simulate severity in hectares and apply a EUR/ha scenario as an explicit final step (not treat lognormal_severity.json/pareto_tail.json as already euros - flagged in the notebook stub), and account for the residual frequency-severity dependence Phase 1 found (annual burnt-area SD is still ~1.8x an independent model's, even at fire-day granularity). Should also decide whether to extract its own logic into a module (e.g. monte_carlo.py) up front, matching distribution_fitting.py, rather than writing it inline and refactoring later.
 - Phase 4 (validation and sensitivity): notebook stub still reflects the original PRD in several places ("final 5 calendar years" as a plain count rather than the confirmed 2021-2025 window, "2023-level" bad years, "within ~20%", Poisson-only sensitivity params) - flagged in the notebook itself, not yet fixed.
