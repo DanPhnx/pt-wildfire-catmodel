@@ -1,0 +1,63 @@
+{
+  "anderson_darling_lognormal": {
+    "statistic": 7.151304388623089,
+    "critical_values": [
+      0.561,
+      0.63,
+      0.751,
+      0.872,
+      1.034
+    ],
+    "significance_levels": [
+      15.0,
+      10.0,
+      5.0,
+      2.5,
+      1.0
+    ],
+    "reject_at_5pct": true
+  },
+  "bootstrap_ad_gpd_tail": {
+    "statistic": 0.5616497192344241,
+    "p_value": 0.192,
+    "n_boot": 1000,
+    "n_boot_successful": 1000
+  },
+  "qq_systematic_deviation_lognormal_body": {
+    "rho": -0.005139698944806837,
+    "p_value": 0.8787144983481199,
+    "systematic": false
+  },
+  "qq_systematic_deviation_gpd_tail_top10pct": {
+    "rho": 0.07340823970037454,
+    "p_value": 0.49418662447522543,
+    "systematic": false
+  },
+  "quantile_ratios_lognormal": {
+    "50pct": 0.8473169886254736,
+    "70pct": 0.8551861896770883,
+    "80pct": 0.9886248239774976,
+    "90pct": 1.0907548685348523,
+    "95pct": 1.4738091495043282,
+    "99pct": 1.7231445646415184
+  },
+  "anderson_darling_lognormal_sub_threshold": {
+    "statistic": 4.534422980324393,
+    "critical_values": [
+      0.56,
+      0.63,
+      0.751,
+      0.872,
+      1.034
+    ],
+    "significance_levels": [
+      15.0,
+      10.0,
+      5.0,
+      2.5,
+      1.0
+    ],
+    "reject_at_5pct": true
+  },
+  "largest_event_residual_share": 0.2649573732217677
+}

@@ -1,0 +1,26 @@
+{
+  "low": {
+    "eur_per_ha": 497.359540824396,
+    "lognormal_mu_eur": 11.977112413285823,
+    "lognormal_sigma": 1.547284287013252,
+    "gpd_threshold_eur": 1260358.8124031022,
+    "gpd_scale_eur": 1651317.6180686264,
+    "gpd_shape_xi": 0.7461629884426342
+  },
+  "central": {
+    "eur_per_ha": 2296.104182761285,
+    "lognormal_mu_eur": 13.506768358728127,
+    "lognormal_sigma": 1.547284287013252,
+    "gpd_threshold_eur": 5818557.609535373,
+    "gpd_scale_eur": 7623453.414867704,
+    "gpd_shape_xi": 0.7461629884426342
+  },
+  "high": {
+    "eur_per_ha": 3167.2329995965893,
+    "lognormal_mu_eur": 13.82841284145908,
+    "lognormal_sigma": 1.547284287013252,
+    "gpd_threshold_eur": 8026085.144277718,
+    "gpd_scale_eur": 10515748.112709468,
+    "gpd_shape_xi": 0.7461629884426342
+  }
+}
