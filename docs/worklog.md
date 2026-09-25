@@ -748,6 +748,40 @@ is already in euros.
 
 `python main.py` reruns all four phases clean after every change above.
 
+## Phase 3 planning: frequency-severity dependence and a tail-stability problem found first (Sept 2026)
+
+Before starting Phase 3 implementation, built a numerical proof-of-concept
+for the open item above (year-level frailty factor, Option A) rather than
+writing the plan on the "~1.8x" figure alone. That figure turned out to be
+comparing history to the wrong baseline (a bootstrap resample of the actual
+historical arrays, which can never exceed what's already been observed) -
+comparing history to the *fitted parametric model* run independently
+instead surfaced a bigger, unrelated problem: the fitted GPD tail (xi=0.746,
+from `models/pareto_tail.json`) has infinite theoretical variance (finite
+only for xi<0.5), so an uncapped simulation doesn't converge at all -
+annual-loss SD ranged 400,000-1,064,000 ha across 8 seeds of the same
+independent model, driven by rare draws so large they're not physically
+possible (one hit 75.7 million ha, over 8x mainland Portugal's land area).
+
+Fix (verified numerically, not yet implemented in `monte_carlo.py`): cap
+each simulated fire-day severity at 5x the historical maximum fire-day
+(982,380 ha) as the working bound - stabilizes cross-seed SD to within
+~2.6% - with ICNF's IFN6 (6th National Forest Inventory, 2015 survey data,
+published June 2019) figure for mainland forest+shrubland+unproductive
+land, 6.1 million ha, hard-coded as an absolute physical backstop. With the
+cap in place, the independent model understates the true observed annual SD
+(147,411 ha, 2009-2020) by a real but modest ~7% (SD ~137,000 ha), not the
+~1.8x first estimated. A year-level lognormal frailty factor (mean 1,
+sigma_z), Gaussian-copula-linked to the annual count draw (correlation
+rho), closes this: sigma_z=0.25 at rho=0 reproduces the observed SD almost
+exactly (ratio 1.003x) but not Phase 1's count/severity rank correlation
+(rho_Spearman=0.57); a first joint grid search over sigma_z and rho shows
+both targets are reachable together but pull against each other, so final
+joint calibration (plus a hold-out check) is left to implementation.
+
+Full writeup, proposed PRD Technical Decisions addendum, and the exact
+numbers: `docs/phase3-frequency-severity-dependence.md`.
+
 ## Open items
 
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
@@ -755,5 +789,5 @@ is already in euros.
 - Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
 - Decide whether to integrate the ICNF PRDF (Zenodo) dataset - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan). Not pursued for now.
 - Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it, if it's picked up later.
-- Phase 3 (Monte Carlo simulation): needs to sample from Negative Binomial (not Poisson - already flagged as stale in the notebook stub), simulate severity in hectares and apply a EUR/ha scenario as an explicit final step (not treat lognormal_severity.json/pareto_tail.json as already euros - flagged in the notebook stub), and account for the residual frequency-severity dependence Phase 1 found (annual burnt-area SD is still ~1.8x an independent model's, even at fire-day granularity). Should also decide whether to extract its own logic into a module (e.g. monte_carlo.py) up front, matching distribution_fitting.py, rather than writing it inline and refactoring later.
+- Phase 3 (Monte Carlo simulation): needs to sample from Negative Binomial (not Poisson - already flagged as stale in the notebook stub), simulate severity in hectares and apply a EUR/ha scenario as an explicit final step (not treat lognormal_severity.json/pareto_tail.json as already euros - flagged in the notebook stub). The frequency-severity dependence question is now planned - see `docs/phase3-frequency-severity-dependence.md`: a proof-of-concept found the "~1.8x" figure above compared to the wrong baseline (bootstrap-of-history, not the fitted parametric model), and surfaced a bigger, separate problem first - the fitted GPD tail (xi=0.746) has infinite theoretical variance and produces a non-convergent, occasionally non-physical simulation uncapped. Plan: cap severity at 5x the historical max fire-day (982,380 ha) as the working bound, with ICNF's 6.1M ha mainland burnable-land figure (IFN6, 2019) as an absolute physical backstop, then add a year-level lognormal frailty factor (sigma_z ~0.25-0.30, Gaussian-copula-linked to count via rho) - validated numerically to reproduce the true annual SD (147,411 ha) closely; joint sigma_z/rho calibration against both variance and the count-severity correlation is deferred to implementation. Should also decide whether to extract its own logic into a module (e.g. monte_carlo.py) up front, matching distribution_fitting.py, rather than writing it inline and refactoring later.
 - Phase 4 (validation and sensitivity): notebook stub still reflects the original PRD in several places ("final 5 calendar years" as a plain count rather than the confirmed 2021-2025 window, "2023-level" bad years, "within ~20%", Poisson-only sensitivity params) - flagged in the notebook itself, not yet fixed.
