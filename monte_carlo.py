@@ -14,9 +14,11 @@ Implements the design set out in docs/phase3-frequency-severity-dependence.md:
   final step (see run_monte_carlo). The GPD tail (shape xi=0.746) has
   infinite theoretical variance (finite only for xi<0.5), so every severity
   draw is capped - see PHYSICAL_CEILING_HA and DEFAULT_CAP_MULTIPLIER.
-- Dependence: a year-level lognormal frailty factor (mean 1), Gaussian-
-  copula-linked to the annual count draw, reproducing the annual-variance
-  gap and count/severity correlation an independent model misses.
+- Dependence: a year-level lognormal frailty factor (mean 1, sigma_z=0.25,
+  rho=0), reproducing the observed annual-variance gap. The copula rho is
+  set to 0: the count/median-severity correlation is not significant at the
+  fire-day event level used by this engine (see calibration note in
+  simulate_dependent_frequency_and_frailty).
 
 Import from a notebook (which runs with the notebook's own directory as its
 working directory) with:
@@ -133,14 +135,15 @@ def simulate_dependent_frequency_and_frailty(nb_params: dict, sigma_z: float, rh
     the two independent (frailty still inflates variance; no count/severity
     correlation).
 
-    Per docs/phase3-frequency-severity-dependence.md: sigma_z=0.25 at rho=0
-    reproduces the observed annual-loss SD closely (ratio 1.003x) but not
-    Phase 1's observed count/median-severity correlation (Spearman rho=0.57,
-    p=0.019); rho>0 reproduces some of that correlation but pulls the SD above
-    target unless sigma_z is reduced to compensate. Final (sigma_z, rho) should
-    be fixed by a joint calibration against both targets plus a hold-out check -
-    not assumed from the planning-stage prototype's grid (sigma_z~0.25-0.30,
-    rho~0-0.7 was the searched range).
+    Calibration (confirmed against training data 2009-2020): sigma_z=0.25 at
+    rho=0 matches the observed training-year annual-area SD (147,411 ha) almost
+    exactly (ratio 0.999). rho is set to 0 because the count/median-severity
+    Spearman correlation, when computed on the fire-day events the model
+    actually uses, is 0.105 (p=0.75) on training data and 0.25 (p=0.33) on the
+    full 2009-2025 record - neither significant. The 0.57 figure cited in the
+    planning doc (docs/phase3-frequency-severity-dependence.md) was computed on
+    individual fire polygons before the fire-day clustering step, not on the
+    event unit the engine uses; it does not carry over.
 
     Parameters
     ----------
@@ -248,21 +251,24 @@ def simulate_severities(n_fires: int, lognormal_params: dict, gpd_params: dict, 
 
 def run_monte_carlo(nb_params: dict, lognormal_params: dict, gpd_params: dict, tail_probability: float,
                      eur_per_ha: float, cap_ha: float, sigma_z: float = 0.0, rho: float = 0.0,
-                     n_scenarios: int = N_SCENARIOS, seed: int = SEED) -> np.ndarray:
+                     n_scenarios: int = N_SCENARIOS, seed: int = SEED) -> tuple:
     """Run the full frequency-severity-dependence Monte Carlo simulation.
 
     For each scenario-year: draw a fire count and year-level frailty factor
     jointly (simulate_dependent_frequency_and_frailty), draw a severity per
     fire (simulate_severities, capped at cap_ha and PHYSICAL_CEILING_HA),
     multiply every severity that year by the year's frailty factor, sum to an
-    aggregate annual burned area (also capped at PHYSICAL_CEILING_HA, since a
-    frailty-inflated sum could otherwise exceed it even if no single fire did),
-    then convert to euros via eur_per_ha as the final step - per the PRD: "the
+    aggregate annual burned area and track the running per-year maximum (the
+    largest single fire that year), both capped at PHYSICAL_CEILING_HA, then
+    convert to euros via eur_per_ha as the final step - per the PRD: "the
     model fits burned area, not euro losses, and converts to euros at the end".
 
+    The running maximum uses a single comparison per fire (if new > current max,
+    replace; otherwise discard) - O(1) extra storage per year, no fire sizes
+    retained.
+
     sigma_z and rho default to 0 (no frailty, independent) so this function
-    also serves as the "independent model" baseline referenced in
-    docs/phase3-frequency-severity-dependence.md; pass the calibrated values
+    also serves as the "independent model" baseline; pass the calibrated values
     to include dependence.
 
     Parameters
@@ -292,18 +298,24 @@ def run_monte_carlo(nb_params: dict, lognormal_params: dict, gpd_params: dict, t
 
     Returns
     -------
-    np.ndarray
-        Shape (n_scenarios,) array of simulated aggregate annual losses (EUR).
+    (np.ndarray, np.ndarray)
+        (aggregate_losses, occurrence_losses), each shape (n_scenarios,) in EUR.
+        aggregate_losses: total annual loss (sum of all fires that year).
+        occurrence_losses: largest single-fire loss that year (0 for years with
+        no fires). Pass each to compute_risk_metrics to get the PRD's aggregate
+        and occurrence return-period losses respectively.
     """
     rng = np.random.default_rng(seed)
     fire_counts, frailty = simulate_dependent_frequency_and_frailty(nb_params, sigma_z, rho, n_scenarios, rng)
     annual_area = np.zeros(n_scenarios)
+    annual_max_fire = np.zeros(n_scenarios)
     for i, n in enumerate(fire_counts):
         if n == 0:
             continue
         severities = simulate_severities(int(n), lognormal_params, gpd_params, tail_probability, rng, cap_ha)
         annual_area[i] = min(severities.sum() * frailty[i], PHYSICAL_CEILING_HA)
-    return annual_area * eur_per_ha
+        annual_max_fire[i] = min(severities.max() * frailty[i], PHYSICAL_CEILING_HA)
+    return annual_area * eur_per_ha, annual_max_fire * eur_per_ha
 
 
 # ---------------------------------------------------------------------------
