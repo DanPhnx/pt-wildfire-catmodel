@@ -860,6 +860,48 @@ Updated `data/raw/loss_anchors.csv`: damage_eur=611078965, area_ha=425839.0,
 price_year=2003, verification=medium, with a note on the 2025-price
 interpretation of the PRD's ">EUR 800m".
 
+## ICNF PRDF swapped in as primary data source (Sept 2026)
+
+Replaced the EFFIS Rapid Damage Assessment export with the ICNF Portuguese
+Rural Fire Database (PRDF, 1980-2025), Zenodo DOI 10.5281/zenodo.21427772
+(Lopes Almeida et al., 2026). Decision: use as replacement for EFFIS (not
+just an extension or cross-check), keeping the same 2009-2025 window for
+now so results are directly comparable.
+
+**Why PRDF is better than EFFIS for this model:**
+- No sensor break: EFFIS required an explicit 30 ha filter to correct a
+  MODIS→Sentinel-2 regime change in 2019 that inflated raw counts 3x.
+  PRDF harmonises five historical databases into a unified, sensor-
+  independent series back to 1980. The 30 ha threshold is now a pure
+  modelling scope choice, not a data artifact correction.
+- Ready to extend to 1980 (PRD target): change START_YEAR in 01_eda.ipynb.
+- More complete coverage: 4,686 events >= 30 ha (2009-2025) vs EFFIS's
+  3,785 (~24% more). PRDF uses administrative records; EFFIS used satellite-
+  mapped polygons (which miss fires in cloudy conditions or near threshold).
+
+**What the swap found (GeoPackage internals):**
+- Table name: Fogos (capital F). Columns: DHInicio, AreaTotal, Ano, Distrito.
+  NUTS2 is NULL for all 2009-2025 records; Distrito used for Location instead.
+- PRDF is already mainland-only: all 18 mainland districts appear; no island
+  districts present. No geographic filter needed.
+- 2017 total area: 521,034 ha (EFFIS: 562,348 ha, ~7% less). High EUR/ha
+  scenario rises to ~3,417/ha (2025 prices) from 3,167/ha.
+- Central-scenario 2017 loss: EUR 979m in 2017 euros = 67% of official
+  EUR 1,458m (EFFIS was 72%; PRDF's smaller 2017 area explains the drop).
+
+**New Phase 2 parameters (re-fitted on PRDF training data):**
+- NB frequency: r=16.78, p=0.155, mean=91.75 fires/year (EFFIS: 73.67)
+- GPD tail: shape(xi)=0.849 (was 0.746), threshold=2,058 ha, 110 exceedances
+
+**Phase 3 results (100k scenarios, sigma_z=0.25, rho=0, central EUR/ha):**
+- VaR(90): EUR 630m, VaR(95): EUR 864m, VaR(99): EUR 2,222m; ES(95): EUR 1,633m
+- VaR(95) SE: 2.005% — just at the PRD's <2% criterion. sigma_z=0.25 was
+  calibrated on EFFIS data; needs recalibration on PRDF annual-SD target.
+
+**Not committed:** data/raw/icnf_prdf_fogos.gpkg (943 MB). A fresh clone
+needs to download it from Zenodo DOI 10.5281/zenodo.21427772 (fogos.gpkg)
+and place it in data/raw/. The loader gives a clear error if it is missing.
+
 ## Open items
 
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
