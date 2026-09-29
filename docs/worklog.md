@@ -902,14 +902,42 @@ now so results are directly comparable.
 needs to download it from Zenodo DOI 10.5281/zenodo.21427772 (fogos.gpkg)
 and place it in data/raw/. The loader gives a clear error if it is missing.
 
+## sigma_z recalibration on PRDF training data (Sept 2026)
+
+Ran a calibration sweep (sigma_z 0.05–0.50, then fine sweep 0.01–0.09, 50k
+scenarios each, rho=0) to recalibrate the frailty factor after the EFFIS→PRDF
+source swap. Target: match the observed PRDF training annual-area SD.
+
+**Key finding: sigma_z=0 is the calibrated value — no frailty needed.**
+
+| sigma_z | sim SD (ha) | ratio vs observed |
+|---------|-------------|-------------------|
+| 0.00    | ~154,927    | 1.141             |
+| 0.05    | ~155,300    | 1.144             |
+| 0.10    | ~156,521    | 1.153             |
+| 0.25    | ~165,161    | 1.216             |
+
+Observed training annual-area SD: **135,773 ha** (PRDF 2009-2020). Even at
+sigma_z=0 (independent model), simulated SD overshoots by 14%. Adding any
+positive sigma_z makes it worse. The heavier PRDF tail (xi=0.849 vs EFFIS's
+0.746, fitted on 110 exceedances) generates sufficient variance without a
+frailty amplifier.
+
+rho=0 confirmed: Spearman rho=0.545, p=0.067 between annual count and median
+fire-day size on PRDF training data — not significant at 5%.
+
+**Updated Phase 3 results (sigma_z=0, rho=0, 100k scenarios, central EUR/ha):**
+- VaR(95): EUR 822m, VaR(99): EUR 2,162m; ES(95): EUR 1,547m
+- VaR(95) SE: **1.85%** — passes PRD criterion of <2% (was 2.005% with sigma_z=0.25)
+- Hold-out: all 5 years pass (2021: 0.0th pct, 2022: 31.2th, 2023: 0.2th,
+  2024: 53.1th, 2025: 90.2th — quiet years in lower half, bad years not implausible)
+
+Notebook 03_monte_carlo.ipynb updated; results saved to simulation/.
+
 ## Open items
 
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
 - No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" / "within published range" domain-validation test uses (Kit). Also look up published 2025 loss figures.
 - Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
-- Decide whether to integrate the ICNF PRDF (Zenodo) dataset - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan). Not pursued for now.
-- Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it, if it's picked up later.
-- Phase 3 (Monte Carlo simulation): the engine now lives in `monte_carlo.py` (Negative Binomial frequency, hectare-based Lognormal/GPD severity with the tail cap, the year-level frailty factor, risk metrics, convergence check - see the two entries above), smoke-tested but not yet run for real. Still to do: joint-calibrate `sigma_z`/`rho` against both the observed annual SD and the observed count-severity correlation (a first grid search found the two pull against each other - see `docs/phase3-frequency-severity-dependence.md`); check the calibration against the 2021-2025 hold-out; decide the final EUR/ha scenario(s) to report under; run the actual 100,000-scenario simulation with the calibrated parameters; confirm the convergence check clears the PRD's <2% bar at that sample size; add the euro-loss results CSV and diagnostic plots the PRD's deliverable asks for; and design occurrence-level (not just aggregate) return-period losses, which need per-event severities retained through the simulation, not just annual sums (`compute_risk_metrics` doesn't do this yet - flagged in its docstring).
 - Phase 4 (validation and sensitivity): notebook stub still reflects the original PRD in several places ("final 5 calendar years" as a plain count rather than the confirmed 2021-2025 window, "2023-level" bad years, "within ~20%", Poisson-only sensitivity params) - flagged in the notebook itself, not yet fixed.
-- Decide whether to integrate the ICNF PRDF (Zenodo) dataset (Dan's call): replacement for EFFIS, from-1980 frequency extension, or cross-check. Not pursued.
-- `docs/phase3-frequency-severity-dependence.md` still contains the planning-stage rho=0.57 frailty discussion and should be updated to reflect the calibrated result (sigma_z=0.25, rho=0) now that Phase 3 is complete.
+- `docs/phase3-frequency-severity-dependence.md` still contains the planning-stage rho=0.57 frailty discussion and the EFFIS-era sigma_z=0.25 calibration narrative; should be updated to reflect the final result (sigma_z=0, rho=0, independent model on PRDF data).
