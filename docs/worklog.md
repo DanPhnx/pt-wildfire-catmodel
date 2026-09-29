@@ -823,6 +823,43 @@ hold-out-checked final answer. `python main.py` runs all four phases clean.
 README's project structure, status, and methodology sections updated to
 match (previously said Phase 3 "not yet implemented").
 
+## 2003 calibration anchor verified (Sept 2026)
+
+Verified both figures for the 2003 Portugal fire season row in
+`data/raw/loss_anchors.csv`. Context: the proposed PRD revision cited
+">EUR 800m" damage and ~425,000 ha area as a second annual-total cross-check
+anchor (in addition to the 2017 EUSF anchor). Both needed independent
+verification before using them.
+
+- **Area: 425,839 ha (confirmed).** ICNF official annual report: 286,055 ha
+  forest + 139,784 ha shrubland. Multiple sources citing ICNF data agree;
+  the PRD's "~425,000 ha" is consistent with rounding this to the nearest
+  thousand.
+
+- **Damage: EUR 611,078,965 in 2003 nominal prices (confirmed as the primary
+  ICNF figure).** ICNF's official annual fire report (2003) gives direct
+  forest-sector losses (timber, shrubland, carbon), the same ICNF basis used
+  for the area statistics. Government and wider-economy estimates (Ministry
+  of Agriculture: ~EUR 925m-1bn; social-cost academic studies: ~EUR 1.3bn)
+  are broader in definition, not the same metric.
+
+- **How the PRD's ">EUR 800m" relates to EUR 611m:** EUR 611m (2003) x 1.526
+  (HICP uplift to 2025 prices) = ~EUR 932m in 2025 prices. The ">EUR 800m"
+  figure is consistent with the 2025-price restated value, not the 2003
+  nominal. The EUR/ha implied (2003 prices): EUR 611m / 425,839 ha ≈
+  EUR 1,435/ha (2003 prices) ≈ EUR 2,189/ha in 2025 prices - sits between
+  the central (EUR 2,296/ha) and low (EUR 497/ha) scenarios, providing a
+  modest additional calibration reference, consistent with low-to-central.
+
+- **Not used for per-fire fitting.** 2003 predates the EFFIS/MODIS record.
+  It is a cross-check on the annual-total basis only, noted as `medium`
+  verification (ICNF indirect, sourced via press article reporting ICNF data,
+  confirmed by a second search; primary ICNF PDF not opened directly).
+
+Updated `data/raw/loss_anchors.csv`: damage_eur=611078965, area_ha=425839.0,
+price_year=2003, verification=medium, with a note on the 2025-price
+interpretation of the PRD's ">EUR 800m".
+
 ## Open items
 
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
@@ -832,3 +869,5 @@ match (previously said Phase 3 "not yet implemented").
 - Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it, if it's picked up later.
 - Phase 3 (Monte Carlo simulation): the engine now lives in `monte_carlo.py` (Negative Binomial frequency, hectare-based Lognormal/GPD severity with the tail cap, the year-level frailty factor, risk metrics, convergence check - see the two entries above), smoke-tested but not yet run for real. Still to do: joint-calibrate `sigma_z`/`rho` against both the observed annual SD and the observed count-severity correlation (a first grid search found the two pull against each other - see `docs/phase3-frequency-severity-dependence.md`); check the calibration against the 2021-2025 hold-out; decide the final EUR/ha scenario(s) to report under; run the actual 100,000-scenario simulation with the calibrated parameters; confirm the convergence check clears the PRD's <2% bar at that sample size; add the euro-loss results CSV and diagnostic plots the PRD's deliverable asks for; and design occurrence-level (not just aggregate) return-period losses, which need per-event severities retained through the simulation, not just annual sums (`compute_risk_metrics` doesn't do this yet - flagged in its docstring).
 - Phase 4 (validation and sensitivity): notebook stub still reflects the original PRD in several places ("final 5 calendar years" as a plain count rather than the confirmed 2021-2025 window, "2023-level" bad years, "within ~20%", Poisson-only sensitivity params) - flagged in the notebook itself, not yet fixed.
+- Decide whether to integrate the ICNF PRDF (Zenodo) dataset (Dan's call): replacement for EFFIS, from-1980 frequency extension, or cross-check. Not pursued.
+- `docs/phase3-frequency-severity-dependence.md` still contains the planning-stage rho=0.57 frailty discussion and should be updated to reflect the calibrated result (sigma_z=0.25, rho=0) now that Phase 3 is complete.
