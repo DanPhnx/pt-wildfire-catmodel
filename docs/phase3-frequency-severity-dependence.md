@@ -1,12 +1,20 @@
 # Phase 3 PRD addendum: frequency-severity dependence and tail stability
 
-**Status: proposal, not yet implemented.** This is a proposed update to the
-PRD's Phase 3 Technical Decisions, written by Dan (with Claude Code) for Dan
-and Kit to fold into the actual PRD if agreed — it is not an official Kit
-revision. It narrowly targets one open item flagged at the end of Phase 2
-(`docs/worklog.md`, "Open items"): how Phase 3's Monte Carlo engine should
-handle the frequency-severity dependence Phase 1 and 2 found, given the PRD
-says only:
+**Status: implemented.** This document was written as a planning proposal
+before Phase 3 was built; the design was accepted and `monte_carlo.py` /
+`03_monte_carlo.ipynb` implement it. See **Final calibration result (PRDF)**
+at the bottom for the production parameter values — they differ from the
+planning-stage estimates below because the data source was later switched
+from EFFIS to the ICNF PRDF (`docs/worklog.md`, "ICNF PRDF swapped in").
+The planning-stage analysis below (EFFIS prototype numbers) is kept as the
+design rationale.
+
+This is a proposed update to the PRD's Phase 3 Technical Decisions, written
+by Dan (with Claude Code) for Dan and Kit to fold into the actual PRD if
+agreed — it is not an official Kit revision. It narrowly targets one open
+item flagged at the end of Phase 2 (`docs/worklog.md`, "Open items"): how
+Phase 3's Monte Carlo engine should handle the frequency-severity dependence
+Phase 1 and 2 found, given the PRD says only:
 
 > **Phase 3: Simulation and metrics (Weeks 3-4)**
 > Monte Carlo engine: annual fire count, then burned area per fire, then euro
@@ -137,10 +145,62 @@ actually built.
   (repeated-run SE on VaR(95%) and VaR(99%)), or hold-out validation. Those
   are Phase 3 implementation, tracked separately.
 
-**Proposed PRD Technical Decisions addendum**, alongside the existing
-"Simulation" row:
+**Proposed PRD Technical Decisions addendum** (planning-stage, EFFIS numbers):
 
 | Decision | Choice | Why |
 |---|---|---|
 | Severity tail cap | 5× historical max fire-day (982,380 ha) as the working simulation bound; ICNF's 6.1M ha mainland burnable-land figure as an absolute physical backstop | The fitted GPD tail (ξ = 0.746) has infinite theoretical variance; uncapped, the simulation doesn't converge and can generate non-physical single-day losses |
 | Frequency-severity dependence | Year-level lognormal frailty factor (mean 1, σ_z calibrated), linked to the annual count draw via a Gaussian copula (ρ calibrated) | Reproduces the observed annual-variance gap and the count/median-severity correlation (ρ_Spearman = 0.57, p = 0.019) that an independent model misses |
+
+---
+
+## Final calibration result (PRDF, production)
+
+After the EFFIS → ICNF PRDF source swap (Sept 2026), Phase 2 was re-fitted
+on the new training data (2009-2020, 1,101 fire-day events). The tail and cap
+numbers changed; the calibration sweep was re-run to determine the final
+(σ_z, ρ).
+
+**Updated tail and cap (PRDF):**
+
+| Parameter | Planning (EFFIS) | Final (PRDF) |
+|---|---|---|
+| GPD shape ξ | 0.746 | **0.849** |
+| Max training fire-day | 196,476 ha | **252,199 ha** |
+| Practical cap (5×) | 982,380 ha | **1,260,995 ha** |
+| Physical ceiling | 6,100,000 ha | 6,100,000 ha (unchanged) |
+| NB mean fires/year | 73.67 | **91.75** |
+
+**σ_z calibration sweep on PRDF training data (target SD: 135,773 ha):**
+
+The PRDF tail (ξ = 0.849) is heavier than EFFIS's (0.746). The independent
+model (σ_z = 0) already overshoots the observed annual-area SD by 14%; every
+positive σ_z widens the gap further. No frailty amplification is needed.
+
+| σ_z | Simulated SD (ha) | Ratio to target |
+|---|---|---|
+| 0.00 | ~154,927 | 1.141 |
+| 0.05 | ~155,300 | 1.144 |
+| 0.10 | ~156,521 | 1.153 |
+| 0.25 | ~165,161 | 1.216 |
+
+**Final production parameters: σ_z = 0, ρ = 0 (independent model).**
+
+ρ = 0 is separately justified: Spearman rho = 0.545, p = 0.067 between annual
+count and median fire-day size on PRDF training data — not significant at 5%.
+
+**Production run results (100k scenarios, central EUR/ha, fixed seed):**
+
+| Metric | Value |
+|---|---|
+| VaR(95%) | €822m |
+| VaR(99%) | €2,162m |
+| ES(95%) | €1,547m |
+| VaR(95%) SE | **1.85%** (PRD criterion: < 2% ✓) |
+| Hold-out (2021-2025) | All 5 years pass |
+
+The planning-stage concern about the independent model understating variance
+(~7% gap on EFFIS data) does not apply to PRDF: if anything, the independent
+model here slightly overestimates variance, and the convergence criterion is
+met more comfortably (1.85% vs. the borderline 2.005% with σ_z = 0.25 on
+PRDF data).
