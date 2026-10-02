@@ -28,7 +28,7 @@ Africa,OWID_AFR,2022,611023
 Africa,OWID_AFR,2023,588544
 Africa,OWID_AFR,2024,481688
 Africa,OWID_AFR,2025,406220
-Africa,OWID_AFR,2026,281760
+Africa,OWID_AFR,2026,289032
 Akrotiri and Dhekelia,OWID_AKD,2012,1
 Akrotiri and Dhekelia,OWID_AKD,2013,0
 Akrotiri and Dhekelia,OWID_AKD,2014,0
@@ -73,7 +73,7 @@ Albania,ALB,2022,173
 Albania,ALB,2023,57
 Albania,ALB,2024,194
 Albania,ALB,2025,150
-Albania,ALB,2026,101
+Albania,ALB,2026,110
 Algeria,DZA,2012,2312
 Algeria,DZA,2013,594
 Algeria,DZA,2014,1375
@@ -88,7 +88,7 @@ Algeria,DZA,2022,372
 Algeria,DZA,2023,381
 Algeria,DZA,2024,164
 Algeria,DZA,2025,269
-Algeria,DZA,2026,547
+Algeria,DZA,2026,551
 American Samoa,ASM,2012,0
 American Samoa,ASM,2013,0
 American Samoa,ASM,2014,0
@@ -133,7 +133,7 @@ Angola,AGO,2022,89627
 Angola,AGO,2023,95574
 Angola,AGO,2024,80497
 Angola,AGO,2025,62673
-Angola,AGO,2026,50923
+Angola,AGO,2026,52671
 Anguilla,AIA,2012,0
 Anguilla,AIA,2013,0
 Anguilla,AIA,2014,0
@@ -178,7 +178,7 @@ Argentina,ARG,2022,13664
 Argentina,ARG,2023,7288
 Argentina,ARG,2024,6989
 Argentina,ARG,2025,6923
-Argentina,ARG,2026,2689
+Argentina,ARG,2026,2899
 Armenia,ARM,2012,83
 Armenia,ARM,2013,96
 Armenia,ARM,2014,41
@@ -193,7 +193,7 @@ Armenia,ARM,2022,65
 Armenia,ARM,2023,26
 Armenia,ARM,2024,11
 Armenia,ARM,2025,73
-Armenia,ARM,2026,3
+Armenia,ARM,2026,5
 Aruba,ABW,2012,0
 Aruba,ABW,2013,0
 Aruba,ABW,2014,0
@@ -223,7 +223,7 @@ Asia,OWID_ASI,2022,88629
 Asia,OWID_ASI,2023,114909
 Asia,OWID_ASI,2024,77501
 Asia,OWID_ASI,2025,68716
-Asia,OWID_ASI,2026,77964
+Asia,OWID_ASI,2026,80825
 Australia,AUS,2012,55570
 Australia,AUS,2013,32394
 Australia,AUS,2014,40123
@@ -238,7 +238,7 @@ Australia,AUS,2022,36741
 Australia,AUS,2023,50172
 Australia,AUS,2024,34623
 Australia,AUS,2025,39281
-Australia,AUS,2026,24293
+Australia,AUS,2026,25116
 Austria,AUT,2012,3
 Austria,AUT,2013,3
 Austria,AUT,2014,7
@@ -268,7 +268,7 @@ Azerbaijan,AZE,2022,202
 Azerbaijan,AZE,2023,66
 Azerbaijan,AZE,2024,58
 Azerbaijan,AZE,2025,117
-Azerbaijan,AZE,2026,76
+Azerbaijan,AZE,2026,80
 Bahamas,BHS,2012,47
 Bahamas,BHS,2013,83
 Bahamas,BHS,2014,45
@@ -433,7 +433,7 @@ Bolivia,BOL,2022,16008
 Bolivia,BOL,2023,14429
 Bolivia,BOL,2024,13704
 Bolivia,BOL,2025,5872
-Bolivia,BOL,2026,2577
+Bolivia,BOL,2026,2828
 Bonaire Sint Eustatius and Saba,BES,2012,0
 Bonaire Sint Eustatius and Saba,BES,2013,0
 Bonaire Sint Eustatius and Saba,BES,2014,0
@@ -478,7 +478,7 @@ Botswana,BWA,2022,3278
 Botswana,BWA,2023,4505
 Botswana,BWA,2024,1057
 Botswana,BWA,2025,1101
-Botswana,BWA,2026,812
+Botswana,BWA,2026,862
 Bouvet Island,BVT,2012,0
 Bouvet Island,BVT,2013,0
 Bouvet Island,BVT,2014,0
@@ -508,7 +508,7 @@ Brazil,BRA,2022,80145
 Brazil,BRA,2023,71369
 Brazil,BRA,2024,65052
 Brazil,BRA,2025,34476
-Brazil,BRA,2026,14348
+Brazil,BRA,2026,17153
 British Indian Ocean Territory,IOT,2012,0
 British Indian Ocean Territory,IOT,2013,0
 British Indian Ocean Territory,IOT,2014,0
@@ -568,7 +568,7 @@ Bulgaria,BGR,2022,266
 Bulgaria,BGR,2023,159
 Bulgaria,BGR,2024,155
 Bulgaria,BGR,2025,83
-Bulgaria,BGR,2026,62
+Bulgaria,BGR,2026,64
 Burkina Faso,BFA,2012,3590
 Burkina Faso,BFA,2013,4891
 Burkina Faso,BFA,2014,4215
@@ -613,7 +613,7 @@ Cambodia,KHM,2022,6939
 Cambodia,KHM,2023,7282
 Cambodia,KHM,2024,8011
 Cambodia,KHM,2025,5603
-Cambodia,KHM,2026,5226
+Cambodia,KHM,2026,5227
 Cameroon,CMR,2012,10009
 Cameroon,CMR,2013,10498
 Cameroon,CMR,2014,10772
@@ -643,7 +643,7 @@ Canada,CAN,2022,2920
 Canada,CAN,2023,11202
 Canada,CAN,2024,4608
 Canada,CAN,2025,5836
-Canada,CAN,2026,3334
+Canada,CAN,2026,3361
 Cape Verde,CPV,2012,3
 Cape Verde,CPV,2013,0
 Cape Verde,CPV,2014,10
@@ -703,7 +703,7 @@ Chad,TCD,2022,11068
 Chad,TCD,2023,12207
 Chad,TCD,2024,8452
 Chad,TCD,2025,8536
-Chad,TCD,2026,3518
+Chad,TCD,2026,3519
 Chile,CHL,2012,1089
 Chile,CHL,2013,1252
 Chile,CHL,2014,1120
@@ -733,7 +733,7 @@ China,CHN,2022,9769
 China,CHN,2023,9459
 China,CHN,2024,8994
 China,CHN,2025,10063
-China,CHN,2026,7671
+China,CHN,2026,7717
 Christmas Island,CXR,2012,0
 Christmas Island,CXR,2013,0
 Christmas Island,CXR,2014,0
@@ -778,7 +778,7 @@ Colombia,COL,2022,7580
 Colombia,COL,2023,5160
 Colombia,COL,2024,4565
 Colombia,COL,2025,3587
-Colombia,COL,2026,2861
+Colombia,COL,2026,2930
 Comoros,COM,2012,5
 Comoros,COM,2013,12
 Comoros,COM,2014,8
@@ -808,7 +808,7 @@ Congo,COG,2022,6229
 Congo,COG,2023,4773
 Congo,COG,2024,5703
 Congo,COG,2025,4136
-Congo,COG,2026,3613
+Congo,COG,2026,3698
 Cook Islands,COK,2012,0
 Cook Islands,COK,2013,0
 Cook Islands,COK,2014,0
@@ -883,7 +883,7 @@ Cuba,CUB,2022,1547
 Cuba,CUB,2023,2706
 Cuba,CUB,2024,1490
 Cuba,CUB,2025,1762
-Cuba,CUB,2026,769
+Cuba,CUB,2026,771
 Curacao,CUW,2012,3
 Curacao,CUW,2013,1
 Curacao,CUW,2014,0
@@ -943,7 +943,7 @@ Democratic Republic of Congo,COD,2022,123481
 Democratic Republic of Congo,COD,2023,112158
 Democratic Republic of Congo,COD,2024,94181
 Democratic Republic of Congo,COD,2025,79186
-Democratic Republic of Congo,COD,2026,65851
+Democratic Republic of Congo,COD,2026,66580
 Denmark,DNK,2012,4
 Denmark,DNK,2013,4
 Denmark,DNK,2014,5
@@ -1003,7 +1003,7 @@ Dominican Republic,DOM,2022,193
 Dominican Republic,DOM,2023,345
 Dominican Republic,DOM,2024,122
 Dominican Republic,DOM,2025,160
-Dominican Republic,DOM,2026,93
+Dominican Republic,DOM,2026,97
 East Timor,TLS,2012,387
 East Timor,TLS,2013,121
 East Timor,TLS,2014,678
@@ -1018,7 +1018,7 @@ East Timor,TLS,2022,31
 East Timor,TLS,2023,442
 East Timor,TLS,2024,98
 East Timor,TLS,2025,77
-East Timor,TLS,2026,33
+East Timor,TLS,2026,50
 Ecuador,ECU,2012,1155
 Ecuador,ECU,2013,1114
 Ecuador,ECU,2014,766
@@ -1033,7 +1033,7 @@ Ecuador,ECU,2022,1157
 Ecuador,ECU,2023,385
 Ecuador,ECU,2024,1110
 Ecuador,ECU,2025,602
-Ecuador,ECU,2026,205
+Ecuador,ECU,2026,240
 Egypt,EGY,2012,68
 Egypt,EGY,2013,117
 Egypt,EGY,2014,105
@@ -1048,7 +1048,7 @@ Egypt,EGY,2022,106
 Egypt,EGY,2023,107
 Egypt,EGY,2024,64
 Egypt,EGY,2025,23
-Egypt,EGY,2026,29
+Egypt,EGY,2026,31
 El Salvador,SLV,2012,191
 El Salvador,SLV,2013,572
 El Salvador,SLV,2014,277
@@ -1123,7 +1123,7 @@ Eswatini,SWZ,2022,285
 Eswatini,SWZ,2023,420
 Eswatini,SWZ,2024,383
 Eswatini,SWZ,2025,196
-Eswatini,SWZ,2026,94
+Eswatini,SWZ,2026,95
 Ethiopia,ETH,2012,14002
 Ethiopia,ETH,2013,16646
 Ethiopia,ETH,2014,14482
@@ -1138,7 +1138,7 @@ Ethiopia,ETH,2022,12240
 Ethiopia,ETH,2023,11143
 Ethiopia,ETH,2024,8453
 Ethiopia,ETH,2025,8440
-Ethiopia,ETH,2026,5285
+Ethiopia,ETH,2026,5316
 Europe,OWID_EUR,2012,56786
 Europe,OWID_EUR,2013,31997
 Europe,OWID_EUR,2014,64253
@@ -1153,7 +1153,7 @@ Europe,OWID_EUR,2022,34100
 Europe,OWID_EUR,2023,24645
 Europe,OWID_EUR,2024,21836
 Europe,OWID_EUR,2025,18295
-Europe,OWID_EUR,2026,17992
+Europe,OWID_EUR,2026,18390
 Europe (excl. Russia),,2012,14171
 Europe (excl. Russia),,2013,8400
 Europe (excl. Russia),,2014,16277
@@ -1168,7 +1168,7 @@ Europe (excl. Russia),,2022,9921
 Europe (excl. Russia),,2023,5472
 Europe (excl. Russia),,2024,6223
 Europe (excl. Russia),,2025,5963
-Europe (excl. Russia),,2026,5859
+Europe (excl. Russia),,2026,6019
 European Union (27),OWID_EU27,2012,8209
 European Union (27),OWID_EU27,2013,4702
 European Union (27),OWID_EU27,2014,3739
@@ -1183,7 +1183,7 @@ European Union (27),OWID_EU27,2022,5101
 European Union (27),OWID_EU27,2023,2837
 European Union (27),OWID_EU27,2024,2217
 European Union (27),OWID_EU27,2025,3092
-European Union (27),OWID_EU27,2026,2771
+European Union (27),OWID_EU27,2026,2855
 Falkland Islands,FLK,2012,18
 Falkland Islands,FLK,2013,6
 Falkland Islands,FLK,2014,1
@@ -1228,7 +1228,7 @@ Fiji,FJI,2022,69
 Fiji,FJI,2023,100
 Fiji,FJI,2024,88
 Fiji,FJI,2025,81
-Fiji,FJI,2026,44
+Fiji,FJI,2026,50
 Finland,FIN,2012,8
 Finland,FIN,2013,19
 Finland,FIN,2014,5
@@ -1258,7 +1258,7 @@ France,FRA,2022,429
 France,FRA,2023,281
 France,FRA,2024,114
 France,FRA,2025,200
-France,FRA,2026,385
+France,FRA,2026,391
 French Guiana,GUF,2012,136
 French Guiana,GUF,2013,58
 French Guiana,GUF,2014,67
@@ -1273,7 +1273,7 @@ French Guiana,GUF,2022,42
 French Guiana,GUF,2023,116
 French Guiana,GUF,2024,76
 French Guiana,GUF,2025,68
-French Guiana,GUF,2026,9
+French Guiana,GUF,2026,14
 French Polynesia,PYF,2012,0
 French Polynesia,PYF,2013,0
 French Polynesia,PYF,2014,0
@@ -1318,7 +1318,7 @@ Gabon,GAB,2022,741
 Gabon,GAB,2023,607
 Gabon,GAB,2024,644
 Gabon,GAB,2025,525
-Gabon,GAB,2026,513
+Gabon,GAB,2026,530
 Gambia,GMB,2012,246
 Gambia,GMB,2013,300
 Gambia,GMB,2014,255
@@ -1348,7 +1348,7 @@ Georgia,GEO,2022,87
 Georgia,GEO,2023,47
 Georgia,GEO,2024,64
 Georgia,GEO,2025,123
-Georgia,GEO,2026,53
+Georgia,GEO,2026,54
 Germany,DEU,2012,15
 Germany,DEU,2013,22
 Germany,DEU,2014,17
@@ -1408,7 +1408,7 @@ Greece,GRC,2022,143
 Greece,GRC,2023,127
 Greece,GRC,2024,103
 Greece,GRC,2025,86
-Greece,GRC,2026,44
+Greece,GRC,2026,45
 Greenland,GRL,2012,0
 Greenland,GRL,2013,0
 Greenland,GRL,2014,1
@@ -1483,7 +1483,7 @@ Guatemala,GTM,2022,1763
 Guatemala,GTM,2023,1942
 Guatemala,GTM,2024,2045
 Guatemala,GTM,2025,802
-Guatemala,GTM,2026,756
+Guatemala,GTM,2026,759
 Guernsey,GGY,2012,0
 Guernsey,GGY,2013,0
 Guernsey,GGY,2014,0
@@ -1543,7 +1543,7 @@ Guyana,GUY,2022,202
 Guyana,GUY,2023,1100
 Guyana,GUY,2024,1270
 Guyana,GUY,2025,334
-Guyana,GUY,2026,174
+Guyana,GUY,2026,192
 Haiti,HTI,2012,97
 Haiti,HTI,2013,119
 Haiti,HTI,2014,59
@@ -1618,7 +1618,7 @@ Hungary,HUN,2022,111
 Hungary,HUN,2023,13
 Hungary,HUN,2024,31
 Hungary,HUN,2025,18
-Hungary,HUN,2026,40
+Hungary,HUN,2026,42
 Iceland,ISL,2012,1
 Iceland,ISL,2013,3
 Iceland,ISL,2014,49
@@ -1648,7 +1648,7 @@ India,IND,2022,25575
 India,IND,2023,18159
 India,IND,2024,12935
 India,IND,2025,15251
-India,IND,2026,13597
+India,IND,2026,13607
 Indonesia,IDN,2012,23018
 Indonesia,IDN,2013,16095
 Indonesia,IDN,2014,33742
@@ -1663,7 +1663,7 @@ Indonesia,IDN,2022,3851
 Indonesia,IDN,2023,16878
 Indonesia,IDN,2024,5424
 Indonesia,IDN,2025,4618
-Indonesia,IDN,2026,17008
+Indonesia,IDN,2026,19610
 Iran,IRN,2012,1662
 Iran,IRN,2013,1857
 Iran,IRN,2014,1926
@@ -1678,7 +1678,7 @@ Iran,IRN,2022,1941
 Iran,IRN,2023,1549
 Iran,IRN,2024,1825
 Iran,IRN,2025,1537
-Iran,IRN,2026,579
+Iran,IRN,2026,602
 Iraq,IRQ,2012,924
 Iraq,IRQ,2013,927
 Iraq,IRQ,2014,1313
@@ -1693,7 +1693,7 @@ Iraq,IRQ,2022,1329
 Iraq,IRQ,2023,1015
 Iraq,IRQ,2024,1060
 Iraq,IRQ,2025,756
-Iraq,IRQ,2026,422
+Iraq,IRQ,2026,441
 Ireland,IRL,2012,15
 Ireland,IRL,2013,30
 Ireland,IRL,2014,7
@@ -1753,7 +1753,7 @@ Italy,ITA,2022,954
 Italy,ITA,2023,1101
 Italy,ITA,2024,558
 Italy,ITA,2025,878
-Italy,ITA,2026,805
+Italy,ITA,2026,826
 Jamaica,JAM,2012,30
 Jamaica,JAM,2013,45
 Jamaica,JAM,2014,35
@@ -1783,7 +1783,7 @@ Japan,JPN,2022,52
 Japan,JPN,2023,42
 Japan,JPN,2024,35
 Japan,JPN,2025,59
-Japan,JPN,2026,54
+Japan,JPN,2026,55
 Jersey,JEY,2012,0
 Jersey,JEY,2013,0
 Jersey,JEY,2014,0
@@ -1828,7 +1828,7 @@ Kazakhstan,KAZ,2022,4222
 Kazakhstan,KAZ,2023,2294
 Kazakhstan,KAZ,2024,812
 Kazakhstan,KAZ,2025,2034
-Kazakhstan,KAZ,2026,1944
+Kazakhstan,KAZ,2026,1999
 Kenya,KEN,2012,1718
 Kenya,KEN,2013,1053
 Kenya,KEN,2014,870
@@ -1843,7 +1843,7 @@ Kenya,KEN,2022,509
 Kenya,KEN,2023,480
 Kenya,KEN,2024,624
 Kenya,KEN,2025,691
-Kenya,KEN,2026,337
+Kenya,KEN,2026,349
 Kiribati,KIR,2012,0
 Kiribati,KIR,2013,0
 Kiribati,KIR,2014,0
@@ -1873,7 +1873,7 @@ Kosovo,OWID_KOS,2022,36
 Kosovo,OWID_KOS,2023,24
 Kosovo,OWID_KOS,2024,66
 Kosovo,OWID_KOS,2025,66
-Kosovo,OWID_KOS,2026,30
+Kosovo,OWID_KOS,2026,33
 Kuwait,KWT,2012,5
 Kuwait,KWT,2013,1
 Kuwait,KWT,2014,7
@@ -1948,7 +1948,7 @@ Lebanon,LBN,2022,25
 Lebanon,LBN,2023,36
 Lebanon,LBN,2024,89
 Lebanon,LBN,2025,21
-Lebanon,LBN,2026,21
+Lebanon,LBN,2026,25
 Lesotho,LSO,2012,25
 Lesotho,LSO,2013,239
 Lesotho,LSO,2014,223
@@ -2068,7 +2068,7 @@ Madagascar,MDG,2022,16222
 Madagascar,MDG,2023,16196
 Madagascar,MDG,2024,14504
 Madagascar,MDG,2025,10094
-Madagascar,MDG,2026,5682
+Madagascar,MDG,2026,6080
 Malawi,MWI,2012,4811
 Malawi,MWI,2013,4688
 Malawi,MWI,2014,3923
@@ -2083,7 +2083,7 @@ Malawi,MWI,2022,2796
 Malawi,MWI,2023,2575
 Malawi,MWI,2024,2072
 Malawi,MWI,2025,1666
-Malawi,MWI,2026,684
+Malawi,MWI,2026,754
 Malaysia,MYS,2012,848
 Malaysia,MYS,2013,751
 Malaysia,MYS,2014,1415
@@ -2128,7 +2128,7 @@ Mali,MLI,2022,11577
 Mali,MLI,2023,12407
 Mali,MLI,2024,9636
 Mali,MLI,2025,9608
-Mali,MLI,2026,4520
+Mali,MLI,2026,4524
 Malta,MLT,2012,0
 Malta,MLT,2013,0
 Malta,MLT,2014,0
@@ -2188,7 +2188,7 @@ Mauritania,MRT,2022,124
 Mauritania,MRT,2023,216
 Mauritania,MRT,2024,133
 Mauritania,MRT,2025,155
-Mauritania,MRT,2026,97
+Mauritania,MRT,2026,98
 Mauritius,MUS,2012,5
 Mauritius,MUS,2013,3
 Mauritius,MUS,2014,8
@@ -2233,7 +2233,7 @@ Mexico,MEX,2022,14958
 Mexico,MEX,2023,13026
 Mexico,MEX,2024,9388
 Mexico,MEX,2025,6297
-Mexico,MEX,2026,4316
+Mexico,MEX,2026,4351
 Micronesia (country),FSM,2012,0
 Micronesia (country),FSM,2013,0
 Micronesia (country),FSM,2014,0
@@ -2293,7 +2293,7 @@ Mongolia,MNG,2022,267
 Mongolia,MNG,2023,213
 Mongolia,MNG,2024,88
 Mongolia,MNG,2025,211
-Mongolia,MNG,2026,130
+Mongolia,MNG,2026,133
 Montenegro,MNE,2012,200
 Montenegro,MNE,2013,18
 Montenegro,MNE,2014,10
@@ -2308,7 +2308,7 @@ Montenegro,MNE,2022,89
 Montenegro,MNE,2023,0
 Montenegro,MNE,2024,49
 Montenegro,MNE,2025,61
-Montenegro,MNE,2026,64
+Montenegro,MNE,2026,73
 Montserrat,MSR,2012,0
 Montserrat,MSR,2013,0
 Montserrat,MSR,2014,0
@@ -2338,7 +2338,7 @@ Morocco,MAR,2022,76
 Morocco,MAR,2023,64
 Morocco,MAR,2024,29
 Morocco,MAR,2025,23
-Morocco,MAR,2026,26
+Morocco,MAR,2026,28
 Mozambique,MOZ,2012,52567
 Mozambique,MOZ,2013,50891
 Mozambique,MOZ,2014,53877
@@ -2353,7 +2353,7 @@ Mozambique,MOZ,2022,43458
 Mozambique,MOZ,2023,47968
 Mozambique,MOZ,2024,37438
 Mozambique,MOZ,2025,31857
-Mozambique,MOZ,2026,20655
+Mozambique,MOZ,2026,22412
 Myanmar,MMR,2012,20987
 Myanmar,MMR,2013,22034
 Myanmar,MMR,2014,21747
@@ -2383,7 +2383,7 @@ Namibia,NAM,2022,2408
 Namibia,NAM,2023,2483
 Namibia,NAM,2024,1025
 Namibia,NAM,2025,1363
-Namibia,NAM,2026,1305
+Namibia,NAM,2026,1409
 Nauru,NRU,2012,0
 Nauru,NRU,2013,0
 Nauru,NRU,2014,0
@@ -2443,7 +2443,7 @@ New Caledonia,NCL,2022,31
 New Caledonia,NCL,2023,94
 New Caledonia,NCL,2024,74
 New Caledonia,NCL,2025,11
-New Caledonia,NCL,2026,11
+New Caledonia,NCL,2026,17
 New Zealand,NZL,2012,212
 New Zealand,NZL,2013,237
 New Zealand,NZL,2014,236
@@ -2458,7 +2458,7 @@ New Zealand,NZL,2022,160
 New Zealand,NZL,2023,96
 New Zealand,NZL,2024,82
 New Zealand,NZL,2025,139
-New Zealand,NZL,2026,100
+New Zealand,NZL,2026,101
 Nicaragua,NIC,2012,921
 Nicaragua,NIC,2013,2127
 Nicaragua,NIC,2014,1991
@@ -2503,7 +2503,7 @@ Nigeria,NGA,2022,22365
 Nigeria,NGA,2023,17975
 Nigeria,NGA,2024,16071
 Nigeria,NGA,2025,13755
-Nigeria,NGA,2026,8303
+Nigeria,NGA,2026,8308
 Niue,NIU,2012,0
 Niue,NIU,2013,0
 Niue,NIU,2014,0
@@ -2548,7 +2548,7 @@ North America,OWID_NAM,2022,43491
 North America,OWID_NAM,2023,47882
 North America,OWID_NAM,2024,33864
 North America,OWID_NAM,2025,25408
-North America,OWID_NAM,2026,18883
+North America,OWID_NAM,2026,19078
 North Korea,PRK,2012,259
 North Korea,PRK,2013,264
 North Korea,PRK,2014,1268
@@ -2578,7 +2578,7 @@ North Macedonia,MKD,2022,52
 North Macedonia,MKD,2023,96
 North Macedonia,MKD,2024,133
 North Macedonia,MKD,2025,83
-North Macedonia,MKD,2026,82
+North Macedonia,MKD,2026,83
 Northern Cyprus,OWID_CYN,2012,9
 Northern Cyprus,OWID_CYN,2013,2
 Northern Cyprus,OWID_CYN,2014,1
@@ -2638,7 +2638,7 @@ Oceania,OWID_OCE,2022,38766
 Oceania,OWID_OCE,2023,52283
 Oceania,OWID_OCE,2024,35785
 Oceania,OWID_OCE,2025,40155
-Oceania,OWID_OCE,2026,26797
+Oceania,OWID_OCE,2026,27852
 Oman,OMN,2012,4
 Oman,OMN,2013,1
 Oman,OMN,2014,3
@@ -2668,7 +2668,7 @@ Pakistan,PAK,2022,1488
 Pakistan,PAK,2023,653
 Pakistan,PAK,2024,900
 Pakistan,PAK,2025,928
-Pakistan,PAK,2026,380
+Pakistan,PAK,2026,381
 Palau,PLW,2012,0
 Palau,PLW,2013,2
 Palau,PLW,2014,0
@@ -2728,7 +2728,7 @@ Papua New Guinea,PNG,2022,1713
 Papua New Guinea,PNG,2023,1773
 Papua New Guinea,PNG,2024,870
 Papua New Guinea,PNG,2025,617
-Papua New Guinea,PNG,2026,2312
+Papua New Guinea,PNG,2026,2526
 Paraguay,PRY,2012,7025
 Paraguay,PRY,2013,10483
 Paraguay,PRY,2014,6223
@@ -2743,7 +2743,7 @@ Paraguay,PRY,2022,7292
 Paraguay,PRY,2023,6460
 Paraguay,PRY,2024,6206
 Paraguay,PRY,2025,3605
-Paraguay,PRY,2026,1957
+Paraguay,PRY,2026,2043
 Peru,PER,2012,4686
 Peru,PER,2013,3279
 Peru,PER,2014,2756
@@ -2758,7 +2758,7 @@ Peru,PER,2022,5015
 Peru,PER,2023,2489
 Peru,PER,2024,3919
 Peru,PER,2025,1583
-Peru,PER,2026,784
+Peru,PER,2026,978
 Philippines,PHL,2012,895
 Philippines,PHL,2013,1310
 Philippines,PHL,2014,1989
@@ -2818,7 +2818,7 @@ Portugal,PRT,2022,465
 Portugal,PRT,2023,229
 Portugal,PRT,2024,488
 Portugal,PRT,2025,607
-Portugal,PRT,2026,343
+Portugal,PRT,2026,359
 Puerto Rico,PRI,2012,11
 Puerto Rico,PRI,2013,13
 Puerto Rico,PRI,2014,9
@@ -2878,7 +2878,7 @@ Romania,ROU,2022,1415
 Romania,ROU,2023,277
 Romania,ROU,2024,370
 Romania,ROU,2025,420
-Romania,ROU,2026,264
+Romania,ROU,2026,289
 Russia,RUS,2012,42615
 Russia,RUS,2013,23597
 Russia,RUS,2014,47976
@@ -2893,7 +2893,7 @@ Russia,RUS,2022,24179
 Russia,RUS,2023,19173
 Russia,RUS,2024,15613
 Russia,RUS,2025,12332
-Russia,RUS,2026,12133
+Russia,RUS,2026,12371
 Rwanda,RWA,2012,120
 Rwanda,RWA,2013,435
 Rwanda,RWA,2014,56
@@ -3088,7 +3088,7 @@ Senegal,SEN,2022,7371
 Senegal,SEN,2023,7833
 Senegal,SEN,2024,5050
 Senegal,SEN,2025,4612
-Senegal,SEN,2026,2785
+Senegal,SEN,2026,2786
 Serbia,SRB,2012,595
 Serbia,SRB,2013,297
 Serbia,SRB,2014,65
@@ -3103,7 +3103,7 @@ Serbia,SRB,2022,158
 Serbia,SRB,2023,152
 Serbia,SRB,2024,186
 Serbia,SRB,2025,129
-Serbia,SRB,2026,105
+Serbia,SRB,2026,123
 Seychelles,SYC,2012,0
 Seychelles,SYC,2013,0
 Seychelles,SYC,2014,0
@@ -3238,7 +3238,7 @@ South Africa,ZAF,2022,11431
 South Africa,ZAF,2023,12433
 South Africa,ZAF,2024,9497
 South Africa,ZAF,2025,5898
-South Africa,ZAF,2026,5340
+South Africa,ZAF,2026,5412
 South America,OWID_SAM,2012,130527
 South America,OWID_SAM,2013,109070
 South America,OWID_SAM,2014,121027
@@ -3253,7 +3253,7 @@ South America,OWID_SAM,2022,146610
 South America,OWID_SAM,2023,124218
 South America,OWID_SAM,2024,120911
 South America,OWID_SAM,2025,67532
-South America,OWID_SAM,2026,34769
+South America,OWID_SAM,2026,38528
 South Georgia and the South Sandwich Islands,SGS,2012,0
 South Georgia and the South Sandwich Islands,SGS,2013,0
 South Georgia and the South Sandwich Islands,SGS,2014,0
@@ -3283,7 +3283,7 @@ South Korea,KOR,2022,34
 South Korea,KOR,2023,16
 South Korea,KOR,2024,1
 South Korea,KOR,2025,52
-South Korea,KOR,2026,12
+South Korea,KOR,2026,15
 South Sudan,SSD,2012,32359
 South Sudan,SSD,2013,40022
 South Sudan,SSD,2014,40634
@@ -3298,7 +3298,7 @@ South Sudan,SSD,2022,35604
 South Sudan,SSD,2023,38285
 South Sudan,SSD,2024,34541
 South Sudan,SSD,2025,30354
-South Sudan,SSD,2026,15057
+South Sudan,SSD,2026,15133
 Spain,ESP,2012,1027
 Spain,ESP,2013,544
 Spain,ESP,2014,535
@@ -3313,7 +3313,7 @@ Spain,ESP,2022,916
 Spain,ESP,2023,526
 Spain,ESP,2024,274
 Spain,ESP,2025,635
-Spain,ESP,2026,627
+Spain,ESP,2026,638
 Sri Lanka,LKA,2012,433
 Sri Lanka,LKA,2013,335
 Sri Lanka,LKA,2014,313
@@ -3328,7 +3328,7 @@ Sri Lanka,LKA,2022,127
 Sri Lanka,LKA,2023,211
 Sri Lanka,LKA,2024,71
 Sri Lanka,LKA,2025,95
-Sri Lanka,LKA,2026,106
+Sri Lanka,LKA,2026,108
 Sudan,SDN,2012,10781
 Sudan,SDN,2013,11463
 Sudan,SDN,2014,10365
@@ -3343,7 +3343,7 @@ Sudan,SDN,2022,9045
 Sudan,SDN,2023,11201
 Sudan,SDN,2024,8359
 Sudan,SDN,2025,10641
-Sudan,SDN,2026,3221
+Sudan,SDN,2026,3224
 Suriname,SUR,2012,164
 Suriname,SUR,2013,67
 Suriname,SUR,2014,139
@@ -3358,7 +3358,7 @@ Suriname,SUR,2022,46
 Suriname,SUR,2023,339
 Suriname,SUR,2024,289
 Suriname,SUR,2025,62
-Suriname,SUR,2026,22
+Suriname,SUR,2026,37
 Svalbard and Jan Mayen,SJM,2012,0
 Svalbard and Jan Mayen,SJM,2013,0
 Svalbard and Jan Mayen,SJM,2014,0
@@ -3418,7 +3418,7 @@ Syria,SYR,2022,155
 Syria,SYR,2023,198
 Syria,SYR,2024,214
 Syria,SYR,2025,77
-Syria,SYR,2026,142
+Syria,SYR,2026,146
 Taiwan,TWN,2012,2
 Taiwan,TWN,2013,2
 Taiwan,TWN,2014,5
@@ -3463,7 +3463,7 @@ Tanzania,TZA,2022,23937
 Tanzania,TZA,2023,20849
 Tanzania,TZA,2024,18498
 Tanzania,TZA,2025,18139
-Tanzania,TZA,2026,8502
+Tanzania,TZA,2026,9084
 Thailand,THA,2012,8691
 Thailand,THA,2013,10079
 Thailand,THA,2014,10487
@@ -3478,7 +3478,7 @@ Thailand,THA,2022,2254
 Thailand,THA,2023,9768
 Thailand,THA,2024,6477
 Thailand,THA,2025,4996
-Thailand,THA,2026,6898
+Thailand,THA,2026,6899
 Togo,TGO,2012,2179
 Togo,TGO,2013,3386
 Togo,TGO,2014,2583
@@ -3568,7 +3568,7 @@ Turkey,TUR,2022,613
 Turkey,TUR,2023,1094
 Turkey,TUR,2024,902
 Turkey,TUR,2025,611
-Turkey,TUR,2026,415
+Turkey,TUR,2026,450
 Turkmenistan,TKM,2012,257
 Turkmenistan,TKM,2013,381
 Turkmenistan,TKM,2014,391
@@ -3628,7 +3628,7 @@ Uganda,UGA,2022,5116
 Uganda,UGA,2023,6063
 Uganda,UGA,2024,3986
 Uganda,UGA,2025,4877
-Uganda,UGA,2026,2871
+Uganda,UGA,2026,2909
 Ukraine,UKR,2012,3286
 Ukraine,UKR,2013,2754
 Ukraine,UKR,2014,11219
@@ -3643,7 +3643,7 @@ Ukraine,UKR,2022,3461
 Ukraine,UKR,2023,2144
 Ukraine,UKR,2024,3152
 Ukraine,UKR,2025,2039
-Ukraine,UKR,2026,2359
+Ukraine,UKR,2026,2395
 United Arab Emirates,ARE,2012,2
 United Arab Emirates,ARE,2013,0
 United Arab Emirates,ARE,2014,2
@@ -3688,7 +3688,7 @@ United States,USA,2022,17590
 United States,USA,2023,10523
 United States,USA,2024,9854
 United States,USA,2025,8896
-United States,USA,2026,6880
+United States,USA,2026,7004
 United States Minor Outlying Islands,UMI,2012,1
 United States Minor Outlying Islands,UMI,2013,0
 United States Minor Outlying Islands,UMI,2014,0
@@ -3733,7 +3733,7 @@ Uruguay,URY,2022,171
 Uruguay,URY,2023,131
 Uruguay,URY,2024,39
 Uruguay,URY,2025,88
-Uruguay,URY,2026,60
+Uruguay,URY,2026,61
 Uzbekistan,UZB,2012,463
 Uzbekistan,UZB,2013,565
 Uzbekistan,UZB,2014,538
@@ -3748,7 +3748,7 @@ Uzbekistan,UZB,2022,340
 Uzbekistan,UZB,2023,262
 Uzbekistan,UZB,2024,127
 Uzbekistan,UZB,2025,187
-Uzbekistan,UZB,2026,137
+Uzbekistan,UZB,2026,140
 Vanuatu,VUT,2012,119
 Vanuatu,VUT,2013,150
 Vanuatu,VUT,2014,138
@@ -3763,7 +3763,7 @@ Vanuatu,VUT,2022,31
 Vanuatu,VUT,2023,34
 Vanuatu,VUT,2024,35
 Vanuatu,VUT,2025,22
-Vanuatu,VUT,2026,34
+Vanuatu,VUT,2026,39
 Vatican,VAT,2012,0
 Vatican,VAT,2013,0
 Vatican,VAT,2014,0
@@ -3793,7 +3793,7 @@ Venezuela,VEN,2022,14029
 Venezuela,VEN,2023,13772
 Venezuela,VEN,2024,16917
 Venezuela,VEN,2025,9461
-Venezuela,VEN,2026,8126
+Venezuela,VEN,2026,8196
 Vietnam,VNM,2012,5843
 Vietnam,VNM,2013,5232
 Vietnam,VNM,2014,7249
@@ -3808,7 +3808,7 @@ Vietnam,VNM,2022,2206
 Vietnam,VNM,2023,3218
 Vietnam,VNM,2024,2117
 Vietnam,VNM,2025,1397
-Vietnam,VNM,2026,1677
+Vietnam,VNM,2026,1701
 Wallis and Futuna,WLF,2012,0
 Wallis and Futuna,WLF,2013,0
 Wallis and Futuna,WLF,2014,0
@@ -3853,7 +3853,7 @@ World,OWID_WRL,2022,962619
 World,OWID_WRL,2023,952481
 World,OWID_WRL,2024,771585
 World,OWID_WRL,2025,626326
-World,OWID_WRL,2026,458165
+World,OWID_WRL,2026,473705
 Yemen,YEM,2012,3
 Yemen,YEM,2013,8
 Yemen,YEM,2014,8
@@ -3883,7 +3883,7 @@ Zambia,ZMB,2022,52757
 Zambia,ZMB,2023,50946
 Zambia,ZMB,2024,38578
 Zambia,ZMB,2025,34342
-Zambia,ZMB,2026,28043
+Zambia,ZMB,2026,29279
 Zimbabwe,ZWE,2012,8037
 Zimbabwe,ZWE,2013,6875
 Zimbabwe,ZWE,2014,7462
@@ -3898,4 +3898,4 @@ Zimbabwe,ZWE,2022,7159
 Zimbabwe,ZWE,2023,7111
 Zimbabwe,ZWE,2024,3269
 Zimbabwe,ZWE,2025,2901
-Zimbabwe,ZWE,2026,2198
+Zimbabwe,ZWE,2026,2441

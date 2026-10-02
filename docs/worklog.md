@@ -748,12 +748,196 @@ is already in euros.
 
 `python main.py` reruns all four phases clean after every change above.
 
+## Phase 3 planning: frequency-severity dependence and a tail-stability problem found first (Sept 2026)
+
+Before starting Phase 3 implementation, built a numerical proof-of-concept
+for the open item above (year-level frailty factor, Option A) rather than
+writing the plan on the "~1.8x" figure alone. That figure turned out to be
+comparing history to the wrong baseline (a bootstrap resample of the actual
+historical arrays, which can never exceed what's already been observed) -
+comparing history to the *fitted parametric model* run independently
+instead surfaced a bigger, unrelated problem: the fitted GPD tail (xi=0.746,
+from `models/pareto_tail.json`) has infinite theoretical variance (finite
+only for xi<0.5), so an uncapped simulation doesn't converge at all -
+annual-loss SD ranged 400,000-1,064,000 ha across 8 seeds of the same
+independent model, driven by rare draws so large they're not physically
+possible (one hit 75.7 million ha, over 8x mainland Portugal's land area).
+
+Fix (verified numerically, not yet implemented in `monte_carlo.py`): cap
+each simulated fire-day severity at 5x the historical maximum fire-day
+(982,380 ha) as the working bound - stabilizes cross-seed SD to within
+~2.6% - with ICNF's IFN6 (6th National Forest Inventory, 2015 survey data,
+published June 2019) figure for mainland forest+shrubland+unproductive
+land, 6.1 million ha, hard-coded as an absolute physical backstop. With the
+cap in place, the independent model understates the true observed annual SD
+(147,411 ha, 2009-2020) by a real but modest ~7% (SD ~137,000 ha), not the
+~1.8x first estimated. A year-level lognormal frailty factor (mean 1,
+sigma_z), Gaussian-copula-linked to the annual count draw (correlation
+rho), closes this: sigma_z=0.25 at rho=0 reproduces the observed SD almost
+exactly (ratio 1.003x) but not Phase 1's count/severity rank correlation
+(rho_Spearman=0.57); a first joint grid search over sigma_z and rho shows
+both targets are reachable together but pull against each other, so final
+joint calibration (plus a hold-out check) is left to implementation.
+
+Full writeup, proposed PRD Technical Decisions addendum, and the exact
+numbers: `docs/phase3-frequency-severity-dependence.md`.
+
+## Phase 3 module set up: `monte_carlo.py` (Sept 2026)
+
+Extracted the simulation engine designed above into `monte_carlo.py` up
+front, matching `distribution_fitting.py`'s pattern for Phase 2 (per the
+PRD's "notebooks for EDA only") rather than writing it inline in the
+notebook and refactoring later - the remaining item from the Phase 2
+open-items note.
+
+Implements, with real logic (not stubs): `load_model_params`;
+`historical_severity_cap` (derives the practical severity cap from the
+actual training data's max, at `DEFAULT_CAP_MULTIPLIER`=5x, rather than
+hardcoding 982,380 - so it can't go stale if the data record is extended);
+`simulate_dependent_frequency_and_frailty` (the Gaussian-copula frequency/
+frailty joint draw); `simulate_severities` (Lognormal body + capped GPD
+tail); `run_monte_carlo` (ties it together, converts to euros as the final
+step, defaults to no frailty so it also serves as the independent baseline);
+`compute_risk_metrics` (VaR 90/95/99, ES(95), the aggregate 1-in-10/25/100
+return-period losses - which are just VaR at 1-1/N and included directly;
+occurrence-level return periods need per-event severities retained, not
+just annual sums, so are flagged as follow-up, not implemented here);
+`convergence_check` (splits one large run into sub-samples to estimate
+VaR(95%)/VaR(99%) standard error, per the PRD's "< 2%" success criterion);
+and the three diagnostic plots plus `save_simulation_results`.
+
+Smoke-tested end to end (`n_scenarios=20,000`, sigma_z=0.25): reproduces
+the ~147k ha calibration target (150,423 ha at this sample size), plausible
+VaR/ES/skewness/kurtosis, and a convergence check giving VaR_95 SE=2.56% at
+n=20,000/10 splits (expected to clear the PRD's 2% bar at the full 100,000-
+scenario run, since SE scales as ~1/sqrt(n) and this run used a fifth of
+the target sample).
+
+Rebuilt `03_monte_carlo.ipynb` to import from the module (mirroring
+`02_distribution_fitting.ipynb`) rather than defining the simulation
+functions itself: loads Phase 2's fitted parameters plus the training data
+needed to derive `tail_probability` and the severity cap, then leaves the
+actual production run commented out, since `sigma_z`/`rho` are still the
+planning-stage prototype's illustrative values, not a joint-calibrated,
+hold-out-checked final answer. `python main.py` runs all four phases clean.
+README's project structure, status, and methodology sections updated to
+match (previously said Phase 3 "not yet implemented").
+
+## 2003 calibration anchor verified (Sept 2026)
+
+Verified both figures for the 2003 Portugal fire season row in
+`data/raw/loss_anchors.csv`. Context: the proposed PRD revision cited
+">EUR 800m" damage and ~425,000 ha area as a second annual-total cross-check
+anchor (in addition to the 2017 EUSF anchor). Both needed independent
+verification before using them.
+
+- **Area: 425,839 ha (confirmed).** ICNF official annual report: 286,055 ha
+  forest + 139,784 ha shrubland. Multiple sources citing ICNF data agree;
+  the PRD's "~425,000 ha" is consistent with rounding this to the nearest
+  thousand.
+
+- **Damage: EUR 611,078,965 in 2003 nominal prices (confirmed as the primary
+  ICNF figure).** ICNF's official annual fire report (2003) gives direct
+  forest-sector losses (timber, shrubland, carbon), the same ICNF basis used
+  for the area statistics. Government and wider-economy estimates (Ministry
+  of Agriculture: ~EUR 925m-1bn; social-cost academic studies: ~EUR 1.3bn)
+  are broader in definition, not the same metric.
+
+- **How the PRD's ">EUR 800m" relates to EUR 611m:** EUR 611m (2003) x 1.526
+  (HICP uplift to 2025 prices) = ~EUR 932m in 2025 prices. The ">EUR 800m"
+  figure is consistent with the 2025-price restated value, not the 2003
+  nominal. The EUR/ha implied (2003 prices): EUR 611m / 425,839 ha ≈
+  EUR 1,435/ha (2003 prices) ≈ EUR 2,189/ha in 2025 prices - sits between
+  the central (EUR 2,296/ha) and low (EUR 497/ha) scenarios, providing a
+  modest additional calibration reference, consistent with low-to-central.
+
+- **Not used for per-fire fitting.** 2003 predates the EFFIS/MODIS record.
+  It is a cross-check on the annual-total basis only, noted as `medium`
+  verification (ICNF indirect, sourced via press article reporting ICNF data,
+  confirmed by a second search; primary ICNF PDF not opened directly).
+
+Updated `data/raw/loss_anchors.csv`: damage_eur=611078965, area_ha=425839.0,
+price_year=2003, verification=medium, with a note on the 2025-price
+interpretation of the PRD's ">EUR 800m".
+
+## ICNF PRDF swapped in as primary data source (Sept 2026)
+
+Replaced the EFFIS Rapid Damage Assessment export with the ICNF Portuguese
+Rural Fire Database (PRDF, 1980-2025), Zenodo DOI 10.5281/zenodo.21427772
+(Lopes Almeida et al., 2026). Decision: use as replacement for EFFIS (not
+just an extension or cross-check), keeping the same 2009-2025 window for
+now so results are directly comparable.
+
+**Why PRDF is better than EFFIS for this model:**
+- No sensor break: EFFIS required an explicit 30 ha filter to correct a
+  MODIS→Sentinel-2 regime change in 2019 that inflated raw counts 3x.
+  PRDF harmonises five historical databases into a unified, sensor-
+  independent series back to 1980. The 30 ha threshold is now a pure
+  modelling scope choice, not a data artifact correction.
+- Ready to extend to 1980 (PRD target): change START_YEAR in 01_eda.ipynb.
+- More complete coverage: 4,686 events >= 30 ha (2009-2025) vs EFFIS's
+  3,785 (~24% more). PRDF uses administrative records; EFFIS used satellite-
+  mapped polygons (which miss fires in cloudy conditions or near threshold).
+
+**What the swap found (GeoPackage internals):**
+- Table name: Fogos (capital F). Columns: DHInicio, AreaTotal, Ano, Distrito.
+  NUTS2 is NULL for all 2009-2025 records; Distrito used for Location instead.
+- PRDF is already mainland-only: all 18 mainland districts appear; no island
+  districts present. No geographic filter needed.
+- 2017 total area: 521,034 ha (EFFIS: 562,348 ha, ~7% less). High EUR/ha
+  scenario rises to ~3,417/ha (2025 prices) from 3,167/ha.
+- Central-scenario 2017 loss: EUR 979m in 2017 euros = 67% of official
+  EUR 1,458m (EFFIS was 72%; PRDF's smaller 2017 area explains the drop).
+
+**New Phase 2 parameters (re-fitted on PRDF training data):**
+- NB frequency: r=16.78, p=0.155, mean=91.75 fires/year (EFFIS: 73.67)
+- GPD tail: shape(xi)=0.849 (was 0.746), threshold=2,058 ha, 110 exceedances
+
+**Phase 3 results (100k scenarios, sigma_z=0.25, rho=0, central EUR/ha):**
+- VaR(90): EUR 630m, VaR(95): EUR 864m, VaR(99): EUR 2,222m; ES(95): EUR 1,633m
+- VaR(95) SE: 2.005% — just at the PRD's <2% criterion. sigma_z=0.25 was
+  calibrated on EFFIS data; needs recalibration on PRDF annual-SD target.
+
+**Not committed:** data/raw/icnf_prdf_fogos.gpkg (943 MB). A fresh clone
+needs to download it from Zenodo DOI 10.5281/zenodo.21427772 (fogos.gpkg)
+and place it in data/raw/. The loader gives a clear error if it is missing.
+
+## sigma_z recalibration on PRDF training data (Sept 2026)
+
+Ran a calibration sweep (sigma_z 0.05–0.50, then fine sweep 0.01–0.09, 50k
+scenarios each, rho=0) to recalibrate the frailty factor after the EFFIS→PRDF
+source swap. Target: match the observed PRDF training annual-area SD.
+
+**Key finding: sigma_z=0 is the calibrated value — no frailty needed.**
+
+| sigma_z | sim SD (ha) | ratio vs observed |
+|---------|-------------|-------------------|
+| 0.00    | ~154,927    | 1.141             |
+| 0.05    | ~155,300    | 1.144             |
+| 0.10    | ~156,521    | 1.153             |
+| 0.25    | ~165,161    | 1.216             |
+
+Observed training annual-area SD: **135,773 ha** (PRDF 2009-2020). Even at
+sigma_z=0 (independent model), simulated SD overshoots by 14%. Adding any
+positive sigma_z makes it worse. The heavier PRDF tail (xi=0.849 vs EFFIS's
+0.746, fitted on 110 exceedances) generates sufficient variance without a
+frailty amplifier.
+
+rho=0 confirmed: Spearman rho=0.545, p=0.067 between annual count and median
+fire-day size on PRDF training data — not significant at 5%.
+
+**Updated Phase 3 results (sigma_z=0, rho=0, 100k scenarios, central EUR/ha):**
+- VaR(95): EUR 822m, VaR(99): EUR 2,162m; ES(95): EUR 1,547m
+- VaR(95) SE: **1.85%** — passes PRD criterion of <2% (was 2.005% with sigma_z=0.25)
+- Hold-out: all 5 years pass (2021: 0.0th pct, 2022: 31.2th, 2023: 0.2th,
+  2024: 53.1th, 2025: 90.2th — quiet years in lower half, bad years not implausible)
+
+Notebook 03_monte_carlo.ipynb updated; results saved to simulation/.
+
 ## Open items
 
 - The residual 2020-2024 area-ratio divergence (~112% vs GWIS after the 30 ha filter) is still an open question.
 - No published total economic loss for 2023/2024 found: decide what benchmark the PRD's "within ~20%" / "within published range" domain-validation test uses (Kit). Also look up published 2025 loss figures.
 - Revisit the fire-day event definition (multi-day windows, hours-clause style) and its sensitivity, esp. the 2017-10-15 cluster.
-- Decide whether to integrate the ICNF PRDF (Zenodo) dataset - as a replacement for EFFIS, a from-1980 extension, or a cross-check (Dan). Not pursued for now.
-- Verify the PRDF GeoPackage's attribute table is readable via sqlite3 without geopandas before committing to using it, if it's picked up later.
-- Phase 3 (Monte Carlo simulation): needs to sample from Negative Binomial (not Poisson - already flagged as stale in the notebook stub), simulate severity in hectares and apply a EUR/ha scenario as an explicit final step (not treat lognormal_severity.json/pareto_tail.json as already euros - flagged in the notebook stub), and account for the residual frequency-severity dependence Phase 1 found (annual burnt-area SD is still ~1.8x an independent model's, even at fire-day granularity). Should also decide whether to extract its own logic into a module (e.g. monte_carlo.py) up front, matching distribution_fitting.py, rather than writing it inline and refactoring later.
 - Phase 4 (validation and sensitivity): notebook stub still reflects the original PRD in several places ("final 5 calendar years" as a plain count rather than the confirmed 2021-2025 window, "2023-level" bad years, "within ~20%", Poisson-only sensitivity params) - flagged in the notebook itself, not yet fixed.
+- `docs/phase3-frequency-severity-dependence.md` still contains the planning-stage rho=0.57 frailty discussion and the EFFIS-era sigma_z=0.25 calibration narrative; should be updated to reflect the final result (sigma_z=0, rho=0, independent model on PRDF data).

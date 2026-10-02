@@ -39,6 +39,9 @@ data/raw/*
 !data/raw/pt_hicp_annual.csv
 !data/raw/effis_fire_database_pt_2008_2026.csv
 !data/raw/effis_fire_database_pt_2008_2026.readme.txt
+# ICNF PRDF: metadata/codebook committed; GeoPackage (943 MB) is NOT committed.
+# Download from Zenodo DOI 10.5281/zenodo.21427772 (fogos.gpkg) and place in data/raw/.
+!data/raw/icnf_prdf_fogos_metadata.csv
 
 # Processed data is derived and regenerable from the committed raw snapshot, not versioned
 data/processed/*

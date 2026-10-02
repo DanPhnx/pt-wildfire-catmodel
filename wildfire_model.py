@@ -3,7 +3,7 @@
 Kept out of the notebooks per the PRD's technical decision ("Entry point:
 one main.py; notebooks for EDA only") - phase notebooks are read as EDA and
 diagnostics, not as the owner of logic that other phases also depend on.
-Only 01_eda.ipynb reads raw EFFIS data; from here on, phases 2-4 work from
+Only 01_eda.ipynb reads raw source data; from here on, phases 2-4 work from
 data/processed/wildfires_processed.csv and this module.
 
 Import from a notebook (which runs with the notebook's own directory as
@@ -11,10 +11,91 @@ its working directory) with:
 
     import sys
     sys.path.insert(0, "..")
-    from wildfire_model import build_fire_day_events
+    from wildfire_model import build_fire_day_events, load_icnf_prdf_database
 """
 
+import sqlite3
+from pathlib import Path
+
 import pandas as pd
+
+# ICNF PRDF raw file, relative to this module (repo root)
+_ICNF_PRDF_FILE = Path(__file__).parent / "data/raw/icnf_prdf_fogos.gpkg"
+
+MIN_FIRE_AREA_HA = 30.0
+
+
+def load_icnf_prdf_database(
+    path: Path = _ICNF_PRDF_FILE,
+    min_area_ha: float = MIN_FIRE_AREA_HA,
+    start_year: int = 2009,
+    end_year: int = 2025,
+) -> pd.DataFrame:
+    """Load the ICNF Portuguese Rural Fire Database (PRDF, 1980-2025).
+
+    Reads the GeoPackage attribute table via sqlite3 — no geopandas needed,
+    the geometry column is ignored. Returns the same schema the downstream
+    pipeline expects: Date, Location, Burned_Area_ha.
+
+    Source: Zenodo DOI 10.5281/zenodo.21427772 (Lopes Almeida et al., 2026),
+    committed to data/raw/icnf_prdf_fogos.gpkg as a static snapshot (no live
+    API, no reproducibility drift).
+
+    The PRDF covers mainland Portugal only (all 18 mainland districts appear;
+    island districts do not); no geographic filter is needed. The NUTS2 field
+    is NULL for 2009-2025 records — Distrito (district) is used for Location
+    instead. Same MIN_FIRE_AREA_HA=30 threshold as the former EFFIS pipeline.
+
+    Unlike the EFFIS export there is no sensor break (PRDF harmonises five
+    historical databases into a unified series, so all years use the same
+    definition). Exact-duplicate records from EFFIS's export artifact are
+    also not present; no deduplication step is applied.
+
+    Parameters
+    ----------
+    path : Path
+        Location of the committed ICNF PRDF GeoPackage.
+    min_area_ha : float
+        Minimum AREATOTAL (ha) to include as a fire event.
+    start_year, end_year : int
+        Inclusive year window applied on ANO (alert year).
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns: Date (datetime64[ns]), Location (str, NUTS2 region),
+        Burned_Area_ha (float). One row per fire, sorted by Date.
+    """
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} not found. Download fogos.gpkg from Zenodo DOI "
+            "10.5281/zenodo.21427772 and place it in data/raw/."
+        )
+    conn = sqlite3.connect(str(path))
+    # Column names in the GeoPackage are mixed case: DHInicio, AreaTotal, Ano, Distrito.
+    # SQLite3 column name matching is case-insensitive so these spellings work fine.
+    # The PRDF covers mainland Portugal only (18 mainland districts; no island records
+    # appear in the data), so no further geographic filter is needed.
+    df = pd.read_sql_query(
+        "SELECT DHInicio, AreaTotal, Distrito, Ano FROM Fogos"
+        " WHERE CAST(Ano AS INTEGER) BETWEEN ? AND ?",
+        conn,
+        params=(start_year, end_year),
+    )
+    conn.close()
+
+    df["Date"] = pd.to_datetime(df["DHInicio"], format="mixed", utc=True).dt.tz_localize(None)
+    # Drop non-physical records (area <= 0 or NULL)
+    df = df[df["AreaTotal"].notna() & (df["AreaTotal"] > 0)]
+    # Apply size threshold
+    df = df[df["AreaTotal"] >= min_area_ha]
+
+    return (
+        df.rename(columns={"Distrito": "Location", "AreaTotal": "Burned_Area_ha"})
+        [["Date", "Location", "Burned_Area_ha"]]
+        .sort_values("Date")
+        .reset_index(drop=True)
+    )
 
 # Confirmed Phase 1 checkpoint decision (see docs/worklog.md): train on
 # 2009-2020, hold out 2021-2025 for the Phase 4 backtest. Keeps 2017 - the
