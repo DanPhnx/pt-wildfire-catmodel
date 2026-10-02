@@ -40,8 +40,10 @@ MODELS_DIR = Path("../models")
 SIMULATION_DIR = Path("../simulation")
 
 # PRD Technical Decisions: "100,000 years, fixed random seed - 10,000 runs is
-# noisy at VaR(99)". SEED is fixed for reproducibility (also a PRD requirement).
-N_SCENARIOS = 100_000
+# noisy at VaR(99)". Increased to 200,000 after the 87th-pct threshold recalibration
+# reduced xi from 0.849 to 0.786, pushing SE(VaR95%) to 2.01% at 100k (marginal
+# failure). 200k brings SE below 1.5%. SEED is fixed for reproducibility (PRD).
+N_SCENARIOS = 200_000
 SEED = 42
 
 # Physical ceiling on any single simulated fire-day: mainland Portugal's forest,

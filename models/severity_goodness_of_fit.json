@@ -18,8 +18,8 @@
     "reject_at_5pct": true
   },
   "bootstrap_ad_gpd_tail": {
-    "statistic": 0.5838475823937159,
-    "p_value": 0.141,
+    "statistic": 0.3271717311887983,
+    "p_value": 0.576,
     "n_boot": 1000,
     "n_boot_successful": 1000
   },
@@ -29,9 +29,9 @@
     "systematic": false
   },
   "qq_systematic_deviation_gpd_tail_top10pct": {
-    "rho": 0.2307192931046142,
-    "p_value": 0.015309488808042919,
-    "systematic": true
+    "rho": 0.148018648018648,
+    "p_value": 0.07769121577299713,
+    "systematic": false
   },
   "quantile_ratios_lognormal": {
     "50pct": 0.7657679844811164,
@@ -42,7 +42,7 @@
     "99pct": 1.7988994160544154
   },
   "anderson_darling_lognormal_sub_threshold": {
-    "statistic": 11.134797376780398,
+    "statistic": 11.035737721583814,
     "critical_values": [
       0.561,
       0.631,

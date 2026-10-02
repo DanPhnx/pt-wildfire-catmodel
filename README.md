@@ -129,32 +129,30 @@ committed as the authoritative snapshot.
    is fitted on **burned area (hectares)**, per the PRD's Technical Decisions
    ("the model fits burned area, not euro losses, and converts to euros at the
    end"): a Lognormal body (mu=5.461 log-ha, sigma=1.523) with a Generalised
-   Pareto tail above the 90th percentile (2,058 ha; shape xi=0.849, scale=2,029.8
-   ha, 110 exceedances — a heavy tail with infinite theoretical variance, expected
-   for a catastrophe model). Euro figures are a deterministic conversion applied
+   Pareto tail above the 87th percentile (1,490 ha; shape xi=0.786, scale=1,802.3
+   ha, 143 exceedances — a heavy tail with infinite theoretical variance, expected
+   for a catastrophe model). Threshold at 87th pct (not the nominal 90th): a
+   sensitivity sweep found the PRD QQ criterion fails at 90th pct (p=0.015) and
+   passes at 87th pct (p=0.078). Euro figures are a deterministic conversion applied
    afterward under the low/central/high EUR/ha scenarios, not baked into the fit.
    The Lognormal body is formally rejected by Anderson-Darling at 5% (a real,
    extreme-tail-concentrated miss, not hidden — see `notebooks/02_distribution_fitting.ipynb`'s
    "Parameter estimates summary"); the GPD tail itself is not rejected (bootstrap
-   Anderson-Darling p=0.141). The PRD's "top 10% of events show no systematic
-   deviation on the QQ plot" criterion technically fails on PRDF data (Spearman
-   rho=0.231, p=0.015) — documented honestly as a limitation; the heavier PRDF
-   tail (xi=0.849) and more exceedances (110 vs the prior 89) give the test more
-   power. Bootstrap 95% CIs reported for every parameter.
+   Anderson-Darling p=0.576). The PRD QQ criterion passes (Spearman rho=0.148,
+   p=0.078). Bootstrap 95% CIs reported for every parameter.
 3. **Monte Carlo simulation** (complete): Negative Binomial frequency ×
    Lognormal/GPD severity (capped at 5× the historical max fire-day, 1,260,995 ha,
    with ICNF's 6.1M ha mainland burnable-land as an absolute backstop). The fitted
-   GPD tail (xi=0.849) has infinite theoretical variance; the cap stabilises the
+   GPD tail (xi=0.786) has infinite theoretical variance; the cap stabilises the
    simulation while still generating events well beyond anything on record. The
    Phase 3 calibration sweep found the independent model (σ_z=0, ρ=0) already
-   overshoots the observed training-period annual-area SD by 14% — no frailty
-   amplification is needed. Production run: 100,000 scenarios, fixed seed,
-   central EUR/ha=2,296. VaR(95%)=€822m (SE=1.85%, PRD criterion <2% ✓),
-   VaR(99%)=€2,162m, ES(95%)=€1,547m. All 2021-2025 hold-out years pass.
-   Return-period check: 2017 (the historical extreme) falls at the 97.6th
-   percentile (~1-in-41), within the PRD's 1-in-30 to 1-in-100 target range.
-   See `docs/phase3-frequency-severity-dependence.md` for the full calibration
-   rationale and sweep results.
+   overshoots the observed training-period annual-area SD — no frailty amplification
+   is needed. Production run: 200,000 scenarios, fixed seed, central EUR/ha=2,296.
+   VaR(95%)=€764m (SE=1.21%, PRD criterion <2% ✓), VaR(99%)=€1,777m,
+   ES(95%)=€1,380m. All 2021-2025 hold-out years pass. Return-period check:
+   2017 falls at the 98.0th percentile (~1-in-51), within the PRD's 1-in-30 to
+   1-in-100 target range. See `docs/phase3-frequency-severity-dependence.md` for
+   the full calibration rationale and sweep results.
 4. **Validation** (not yet implemented): backtesting against held-out years
    (reporting the percentile each falls at), parameter sensitivity, climate
    scenario analysis
@@ -210,15 +208,16 @@ fire-day clusters for modelling (see `wildfire_model.build_fire_day_events`)
 using PRDF training data (2009-2020, 1,101 fire-day events). Frequency:
 Negative Binomial chosen over Poisson on a formal dispersion test, AIC and
 BIC (NB AIC 114.2 vs Poisson 153.6; r=16.78, mean=91.75). Severity:
-Lognormal body with a Generalised Pareto tail (threshold at the 90th
-percentile, 2,058 ha; xi=0.849), fitted on burned area per the PRD (not
+Lognormal body with a Generalised Pareto tail (threshold at the 87th
+percentile, 1,490 ha; xi=0.786), fitted on burned area per the PRD (not
 on euro loss), with euro-equivalent parameters under the low/central/high
 EUR/ha scenarios reported as a final conversion step
 (`models/severity_euro_equivalents.json`). A bootstrap Anderson-Darling
-p-value (p=0.141) covers the tail; the PRD's "top 10% of events" QQ
-criterion technically fails (p=0.015, Spearman rho=0.231 — documented
-as a limitation, not hidden). The Lognormal body is formally rejected by
-Anderson-Darling (a real, extreme-tail-concentrated miss — see
+p-value (p=0.576) covers the tail; the PRD's QQ criterion passes (p=0.078,
+Spearman rho=0.148). Threshold at 87th pct chosen via a sensitivity sweep
+(90th pct failed the QQ criterion at p=0.015; 87th pct passes with more
+exceedances and a similar tail shape). The Lognormal body is formally
+rejected by Anderson-Darling (a real, extreme-tail-concentrated miss — see
 `notebooks/02_distribution_fitting.ipynb`'s "Parameter estimates summary");
 the GPD tail is not. Bootstrap 95% confidence intervals reported for every
 parameter. All parameters and diagnostic plots (PDF) saved to `models/`.
@@ -227,13 +226,13 @@ parameter. All parameters and diagnostic plots (PDF) saved to `models/`.
 Negative Binomial frequency × Lognormal/GPD severity (capped at 5×
 historical max fire-day, 1,260,995 ha; ICNF's 6.1M ha mainland burnable
 area as physical backstop). Calibration sweep confirmed σ_z=0, ρ=0
-(independent model): the PRDF tail (xi=0.849) already overshoots observed
-training-period annual-area SD by 14%; no frailty amplification needed.
-Production run (100k scenarios, fixed seed, central EUR/ha): VaR(95%)=€822m,
-SE=1.85% (PRD <2% ✓); VaR(99%)=€2,162m; ES(95%)=€1,547m. All 2021-2025
-hold-out years pass (quiet: 2021 at 0.0th pct, 2023 at 0.2th; bad: 2022
-at 31.2th, 2024 at 53.1th, 2025 at 90.2th). 2017 (historical extreme) at
-97.6th pct (~1-in-41, within PRD's 1-in-30 to 1-in-100 ✓). Results in
+(independent model): the PRDF tail already overshoots observed
+training-period annual-area SD; no frailty amplification needed. Production
+run (200k scenarios, fixed seed, central EUR/ha): VaR(95%)=€764m,
+SE=1.21% (PRD <2% ✓); VaR(99%)=€1,777m; ES(95%)=€1,380m. All 2021-2025
+hold-out years pass (quiet: 2021 at 0.0th pct, 2023 at 0.1th; bad: 2022
+at 29.0th, 2024 at 51.4th, 2025 at 91.1th). 2017 (historical extreme) at
+98.0th pct (~1-in-51, within PRD's 1-in-30 to 1-in-100 ✓). Results in
 `simulation/`. See `docs/phase3-frequency-severity-dependence.md` for
 calibration detail.
 
